@@ -1,0 +1,17 @@
+# AARS Bridge Configuration
+server:
+  host: "129.212.179.98"
+  port: 22
+  user: "root"
+  key_path: "~/.ssh/id_gpu_droplet"
+
+paths:
+  local_input: "C:\\Suno_Restoration\\Input"
+  local_output: "C:\\Suno_Restoration\\Output"
+  remote_input: "/data/input"
+  remote_output: "/data/output"
+
+sync:
+  poll_interval_seconds: 30
+  upload_batch_size: 20
+  verify_hash: true  # MD5 integrity check after transfer

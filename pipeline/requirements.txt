@@ -1,0 +1,20 @@
+# Core
+pydantic>=2.5
+pyyaml>=6.0
+
+# Audio Analysis (CPU — no GPU needed)
+librosa>=0.10
+soundfile>=0.12
+pyloudnorm>=0.1
+numpy>=1.26
+
+# Agent Framework
+crewai>=0.80
+langchain-openai>=0.1
+
+# Audio Models (ROCm-compatible)
+vocos>=0.1
+deepfilternet>=0.5
+
+# Utilities
+requests>=2.31

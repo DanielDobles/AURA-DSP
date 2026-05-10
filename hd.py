@@ -695,27 +695,40 @@ def cmd_run(args):
     
     # Check if input_path is a Windows path. If so, run the adaptive onboarding.
     if ":" in input_path or "\\" in input_path:
-        # Phase 1: Scan with gaming-style loading UI
-        with console.status(f"[bold cyan]👾 Analizando radar local:[/bold cyan] Escaneando {input_path} en busca de pistas de audio...", spinner="bouncingBar"):
-            tracks = scan_input_folder(input_path)
-        
-        
-        # Phase 2: Display adaptive summary & confirm
-        if not display_track_summary(tracks, auto_yes=auto_yes):
-            console.print("[dim]Operación cancelada.[/dim]")
-            return
-        
-        # Phase 3: Upload with progress
-        console.print("\n[bold magenta]📡 Transfiriendo al MI300X...[/bold magenta]")
-        upload_stats = upload_with_progress(tracks)
-        
-        if upload_stats["success"] == 0:
-            console.print("[bold red]Error: No se pudo subir ningún archivo.[/bold red]")
-            return
-        
-        track_count_label = f"{upload_stats['success']} tracks"
-        # Set the remote path for the pipeline
-        input_path = "/data/input_dynamic"
+        while True:
+            # Phase 1: Scan with gaming-style loading UI
+            with console.status(f"[bold cyan]👾 Analizando radar local:[/bold cyan] Escaneando {input_path} en busca de pistas de audio...", spinner="bouncingBar"):
+                tracks = scan_input_folder(input_path)
+            
+            # Phase 2: Display adaptive summary & confirm
+            if display_track_summary(tracks, auto_yes=auto_yes):
+                break # User confirmed, proceed to upload
+            
+            # User declined or no tracks found. Ask for a new path.
+            console.print("\n[yellow]¿Deseas intentar con otra carpeta?[/yellow]")
+            try:
+                new_path = Prompt.ask("[cyan]Introduce la nueva ruta (o presiona Ctrl+C para abortar)[/cyan]")
+                input_path = new_path.strip('"\'')
+                # If they provide a non-Windows path, break to let it run remotely
+                if not (":" in input_path or "\\" in input_path):
+                    break
+            except KeyboardInterrupt:
+                console.print("\n[dim]Operación cancelada por el usuario.[/dim]")
+                return
+                
+        # If input_path is still a Windows path, it means they confirmed the tracks
+        if ":" in input_path or "\\" in input_path:
+            # Phase 3: Upload with progress
+            console.print("\n[bold magenta]📡 Transfiriendo al MI300X...[/bold magenta]")
+            upload_stats = upload_with_progress(tracks)
+            
+            if upload_stats["success"] == 0:
+                console.print("[bold red]Error: No se pudo subir ningún archivo.[/bold red]")
+                return
+            
+            track_count_label = f"{upload_stats['success']} tracks"
+            # Set the remote path for the pipeline
+            input_path = "/data/input_dynamic"
     
     do_purge = " --purge" if getattr(args, "purge", False) else ""
     do_overwrite = " --overwrite" if getattr(args, "overwrite", False) else ""

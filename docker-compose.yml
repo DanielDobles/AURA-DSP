@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # ── LLM Cognitive Engine (vLLM ROCm) ─────────────────────────
+  vllm-brain:
+    image: vllm/vllm-openai:latest-rocm
+    container_name: aura_vllm_engine
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri:/dev/dri
+    group_add:
+      - video
+      - render
+    security_opt:
+      - seccomp:unconfined
+    ipc: host
+    shm_size: '64gb' # Critical for MI300X IPC
+    ports:
+      - "8000:8000"
+    environment:
+      # Target MI300X architecture explicitly if needed
+      - HSA_OVERRIDE_GFX_VERSION=9.4.2 
+    volumes:
+      # Use the 5TB Scratch disk for massive model weights
+      - /mnt/scratch/models:/root/.cache/huggingface
+    # Memory Partitioning: Reserve 40% VRAM (~76.8GB) for LLM.
+    # Leaves ~115.2GB for Demucs/AudioSR/DSP in the other container.
+    command: >
+      --model openai/Qwen/Qwen3-32B
+      --tensor-parallel-size 1
+      --gpu-memory-utilization 0.40
+      --max-model-len 32768
+      --trust-remote-code
+    restart: unless-stopped
+
+  # ── AURA-DSP Agentic Swarm (PyTorch ROCm) ────────────────────
+  aura-pipeline:
+    build:
+      context: .
+      dockerfile: Dockerfile.rocm
+    container_name: aura_agent_swarm
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri:/dev/dri
+    group_add:
+      - video
+      - render
+    security_opt:
+      - seccomp:unconfined
+    ipc: host
+    environment:
+      # Connect locally to the vLLM instance
+      - VLLM_BASE_URL=http://vllm-brain:8000/v1
+      - HSA_OVERRIDE_GFX_VERSION=9.4.2
+    volumes:
+      - ./pipeline:/app/pipeline
+      # High IOPS Workspace on 5TB NVMe Scratch Disk
+      - /mnt/scratch/aura_data:/data
+    depends_on:
+      - vllm-brain
+    command: tail -f /dev/null # Keep alive for manual triggered runs, or replace with python pipeline/main.py

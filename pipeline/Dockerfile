@@ -1,25 +1,28 @@
-# AARS Pipeline — ROCm MI300X Container (Purified DSP version)
-FROM rocm/pytorch:rocm6.2.2_ubuntu22.04_py3.10_pytorch_release_2.3.0
+# SOTA 2026 ROCm PyTorch Base Image (Ubuntu 24.04 + ROCm 7.2)
+FROM rocm/pytorch:latest
 
-# Use specific conda python path
-ENV PATH /opt/conda/envs/py_3.10/bin:$PATH
-
-# System dependencies for audio and DSP
-RUN apt-get update && apt-get install -y \
+# Install critical Audio/Video System Dependencies
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     ffmpeg \
     libsndfile1 \
-    libsox-dev \
+    sox \
+    libsox-fmt-all \
     git \
+    wget \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Install Python stack
+# Upgrade pip and install CrewAI + PyTorch dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel
+RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --no-deps git+https://github.com/facebookresearch/demucs#egg=demucs
 
-# Copy pipeline code
+# Pre-fetch Demucs models to avoid timeouts during execution
+RUN python -c "from demucs.api import Separator; Separator(model='htdemucs')" || true
+
+# Copy the AURA-DSP codebase
 COPY . .
 
 # Set environment variables for ROCm / MI300X

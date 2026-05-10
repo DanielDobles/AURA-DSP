@@ -17,8 +17,14 @@ from tools.surgeon_tools import (
     AudiophileUpsamplerTool,
     TransientPreservationTool,
     HarmonicExciterTool,
+    PsychoacousticExciterTool,
+    StereoWidthTool,
+    MasterMaximizerTool,
     FFmpegProMasteringTool,
-    QualityComparisonTool
+    QualityComparisonTool,
+    TonalBalanceStabilizerTool,
+    NeuralMasterRebalanceTool,
+    SOTAMasteringChainTool
 )
 
 
@@ -26,8 +32,9 @@ from tools.surgeon_tools import (
 
 llm_brain = LLM(
     model="openai/Qwen/Qwen3-32B",
-    base_url=os.getenv("VLLM_BASE_URL", "http://localhost:8000/v1"),
-    api_key="none"
+    base_url=os.getenv("VLLM_BASE_URL", "http://127.0.0.1:8000/v1"),
+    api_key="none",
+    extra_body={"chat_template_kwargs": {"enable_thinking": False}}
 )
 
 
@@ -38,8 +45,12 @@ class AURACrew:
         self._tools_upsampler = AudiophileUpsamplerTool()
         self._tools_transient = TransientPreservationTool()
         self._tools_exciter = HarmonicExciterTool()
+        self._tools_psycho = PsychoacousticExciterTool()
+        self._tools_wide = StereoWidthTool()
+        self._tools_maxi = MasterMaximizerTool()
         self._tools_master = FFmpegProMasteringTool()
         self._tools_qc = QualityComparisonTool()
+        self._tools_chain = SOTAMasteringChainTool()
 
     def build_crew(self):
         """Constructs the 3-agent crew with inter-task context flow."""
@@ -52,12 +63,16 @@ class AURACrew:
                 "the optimal restoration plan. Output a PRECISE ordered list of tool calls."
             ),
             backstory=(
-                "You are an audio forensics expert. You read spectral diagnostics and "
-                "historical swarm memory to decide which DSP tools to apply, in what order, "
-                "and with what expectations. You never execute tools yourself — you only "
-                "produce the strategy. Base your decisions on the spectral data provided: "
-                "if cutoff_freq_hz < 16000, upsampling is mandatory. If noise_floor_db > -50, "
-                "mastering with denoise is critical. Always prescribe the QC comparison at the end."
+                "You are an elite DSP mastering engineer modeled after the core architecture of iZotope Ozone 11. "
+                "You read spectral diagnostics and historical swarm memory to decide which DSP tools to apply. "
+                "You use a SOTA 'Master Assistant' paradigm. "
+                "To achieve an industry-standard, commercial master (Consumer Mode), your pipeline must prioritize: "
+                "1. spectral_tonal_balance_stabilizer FIRST to fix muddy/harsh macroscopic frequency response. "
+                "2. neural_master_rebalance to perfectly isolate and widen the melody while keeping vocals pristine and mono-bassing the rhythm. "
+                "3. psychoacoustic_clarity_exciter for asymmetric tube-like saturation (warmth and bite). "
+                "4. transient_preservation_dsp for punch recovery via fast/slow envelope analysis. "
+                "5. dynamic_boost_maximizer for GPU Tensor soft-knee maximization to commercial LUFS. "
+                "Base your decisions on the spectral data provided: if cutoff_freq_hz < 16000, upsampling is mandatory."
             ),
             llm=llm_brain,
             verbose=True,
@@ -69,21 +84,19 @@ class AURACrew:
         surgeon = Agent(
             role="Master Audio Surgeon",
             goal=(
-                "Execute the restoration plan by calling DSP tools in the exact order "
-                "prescribed by the Strategist. YOU MUST CALL THE TOOLS — do not simulate."
+                "Execute ALL steps of the restoration plan sequentially by calling each DSP tool "
+                "one at a time in order. You MUST call each tool — never simulate or skip. "
+                "NEVER call quality_comparison_auditor — that tool belongs to a different agent."
             ),
             backstory=(
-                "You are a precision execution unit. You receive a restoration plan from "
-                "the Strategist and execute each step by calling the appropriate tool with "
-                "the correct file paths. After each tool call, report the JSON metrics returned. "
-                "Chain outputs: each tool's output_path becomes the next tool's input_path."
+                "You are a deterministic execution engine. You receive a numbered restoration plan and "
+                "you execute EACH step by calling the correct tool with the exact paths specified. "
+                "After each tool call, parse the JSON response. If success=true, proceed to the next step "
+                "using the output_path as the next input_path. If success=false, STOP and report the error. "
+                "You must call ALL tools in the plan. Do NOT skip any step. Do NOT use quality_comparison_auditor. "
+                "Your job is ONLY to execute DSP tools in sequence and report their results."
             ),
-            tools=[
-                self._tools_upsampler,
-                self._tools_transient,
-                self._tools_exciter,
-                self._tools_master,
-            ],
+            tools=[self._tools_chain],
             llm=llm_brain,
             verbose=True,
             allow_delegation=False,
@@ -117,17 +130,15 @@ class AURACrew:
                 "- Filename: {filename}\n"
                 "- Audio path: {audio_path}\n"
                 "- Spectral diagnosis: {spectral_json}\n"
-                "- Swarm memory briefing: {memory_briefing}\n\n"
-                "Produce a numbered restoration plan. For each step specify:\n"
-                "  - Tool name (one of: soxr_vhq_upsampler, transient_preservation_dsp, "
-                "harmonic_spectral_exciter, ffmpeg_pro_master)\n"
+                "- Swarm memory briefing: {memory_briefing}\n"
+                "- MISSION GOAL: {mission_goal}\n\n"
+                "Produce a restoration plan. For the step specify:\n"
+                "  - Tool name MUST BE: sota_mastering_chain\n"
                 "  - input_path and output_path\n"
                 "  - Expected improvement\n\n"
                 "Rules:\n"
-                "  1. If sample_rate < 96000, first step MUST be soxr_vhq_upsampler\n"
-                "  2. Always chain outputs: step N output → step N+1 input\n"
-                "  3. Final output must be at /data/output/{filename}_restored.wav\n"
-                "  4. The QC step (quality_comparison_auditor) will be handled by the next agent"
+                "  1. Final output must be at /data/output/{filename}_restored.wav\n"
+                "  2. The QC step (quality_comparison_auditor) will be handled by the next agent"
             ),
             expected_output=(
                 "A numbered restoration plan with tool names, file paths, and rationale."
@@ -140,29 +151,17 @@ class AURACrew:
             description=(
                 "Execute the restoration plan from the Strategist.\n"
                 "For the file: {audio_path} (named: {filename})\n\n"
-                "CRITICAL INSTRUCTIONS:\n"
-                "1. Call each tool in the prescribed order using the EXACT paths\n"
-                "2. After each tool call, parse the JSON response to confirm success\n"
-                "3. If a tool returns success=false, STOP and report the error\n"
-                "4. Chain: each tool's output_path becomes the next tool's input_path\n"
-                "5. The final output MUST be saved at /data/output/{filename}_restored.wav\n\n"
-                "Standard restoration chain (if no specific plan from Strategist):\n"
-                "  Step 1: soxr_vhq_upsampler → /data/output/{filename}_96k.wav\n"
-                "  Step 2: transient_preservation_dsp → /data/output/{filename}_transient.wav\n"
-                "  Step 3: harmonic_spectral_exciter → /data/output/{filename}_excited.wav\n"
-                "  Step 4: ffmpeg_pro_master → /data/output/{filename}_restored.wav"
+                "MANDATORY PROTOCOL:\n"
+                "1. Call sota_mastering_chain with input_path={audio_path} output_path=/data/output/{filename}_restored.wav\n"
+                "2. When the tool completes, output its JSON result.\n"
+                "NEVER call quality_comparison_auditor."
             ),
             expected_output=(
-                "A report of each tool execution with the JSON metrics from each step."
+                "The JSON result of the sota_mastering_chain tool execution."
             ),
             agent=surgeon,
             context=[strategy_task],
-            tools=[
-                self._tools_upsampler,
-                self._tools_transient,
-                self._tools_exciter,
-                self._tools_master,
-            ]
+            tools=[self._tools_chain]
         )
 
         # ── Task 3: Quality Control ────────────────────────

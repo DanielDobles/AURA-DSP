@@ -1,0 +1,27 @@
+# SOTA 2026 ROCm PyTorch Base Image (Ubuntu 24.04 + ROCm 7.2)
+FROM rocm/pytorch:latest
+
+# Install critical Audio/Video System Dependencies
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    ffmpeg \
+    libsndfile1 \
+    sox \
+    libsox-fmt-all \
+    git \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Upgrade pip and install CrewAI + PyTorch dependencies
+COPY pipeline/requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Pre-fetch Demucs models to avoid timeouts during execution
+RUN python -c "from demucs.api import Separator; Separator(model='htdemucs')" || true
+
+# Copy the AURA-DSP codebase
+COPY pipeline/ ./pipeline/
+
+CMD ["python", "pipeline/main.py"]

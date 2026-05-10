@@ -1,0 +1,19 @@
+# AARS — Audio & Data Exclusions
+*.wav
+*.mp3
+*.flac
+*.ogg
+*.m4a
+*.aiff
+
+# Directories
+data/
+output/
+pipeline/analysis/plots/
+__pycache__/
+*.pyc
+
+# Environment & Secrets
+.env
+.ssh/
+id_gpu_droplet*

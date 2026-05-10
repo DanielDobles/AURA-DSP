@@ -30,3 +30,85 @@
 2026-05-09 21:00:32,060 [INFO] Shutting down Bridge...
 2026-05-09 21:00:32,061 [INFO] [chan 0] sftp session closed.
 2026-05-09 21:00:32,062 [INFO] Disconnected.
+2026-05-10 00:57:27,793 [INFO] 👁️  Watching: C:\Suno_Restoration\Input
+2026-05-10 00:57:27,794 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 00:57:27,794 [INFO] 📡 Polling server every 30s for completed files
+2026-05-10 00:57:27,794 [INFO] ==================================================
+2026-05-10 00:57:27,794 [INFO] AARS Bridge is ACTIVE. Drop audio files into:
+2026-05-10 00:57:27,795 [INFO]   C:\Suno_Restoration\Input
+2026-05-10 00:57:27,795 [INFO] Restored files will appear in:
+2026-05-10 00:57:27,795 [INFO]   C:\Suno_Restoration\Output
+2026-05-10 00:57:27,795 [INFO] ==================================================
+2026-05-10 00:57:27,926 [INFO] Connected (version 2.0, client OpenSSH_9.6p1)
+2026-05-10 00:57:28,304 [INFO] Authentication (publickey) successful!
+2026-05-10 00:57:28,787 [INFO] [chan 0] Opened sftp connection (server version 3)
+2026-05-10 00:57:28,788 [INFO] Connected to 129.212.179.98
+2026-05-10 00:57:29,032 [INFO] 📥 4 completed file(s) found on server
+2026-05-10 00:57:29,033 [INFO] Downloading: /data/output/C.wav_transient.wav → C:\Suno_Restoration\Output\C.wav_transient.wav
+2026-05-10 00:57:37,573 [INFO] Shutting down Bridge...
+2026-05-10 00:57:37,573 [INFO] [chan 0] sftp session closed.
+2026-05-10 00:57:37,574 [ERROR] Download failed for /data/output/C.wav_transient.wav: Server connection dropped: 
+2026-05-10 00:57:37,574 [INFO] Disconnected.
+2026-05-10 01:11:15,573 [INFO] 👁️  Watching: C:\Suno_Restoration\Input
+2026-05-10 01:11:15,579 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 01:11:15,579 [INFO] 📡 Polling server every 30s for completed files
+2026-05-10 01:11:15,580 [INFO] ==================================================
+2026-05-10 01:11:15,580 [INFO] AARS Bridge is ACTIVE. Drop audio files into:
+2026-05-10 01:11:15,580 [INFO]   C:\Suno_Restoration\Input
+2026-05-10 01:11:15,580 [INFO] Restored files will appear in:
+2026-05-10 01:11:15,580 [INFO]   C:\Suno_Restoration\Output
+2026-05-10 01:11:15,580 [INFO] ==================================================
+2026-05-10 01:11:15,713 [INFO] Connected (version 2.0, client OpenSSH_9.6p1)
+2026-05-10 01:11:16,113 [INFO] Authentication (publickey) successful!
+2026-05-10 01:11:16,409 [INFO] [chan 0] Opened sftp connection (server version 3)
+2026-05-10 01:11:16,409 [INFO] Connected to 129.212.179.98
+2026-05-10 01:13:06,385 [ERROR] Socket exception: An existing connection was forcibly closed by the remote host (10054)
+2026-05-10 01:13:06,387 [ERROR] Failed to list /data/output: Server connection dropped: 
+2026-05-10 01:13:36,388 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 01:13:36,519 [INFO] Connected (version 2.0, client OpenSSH_9.6p1)
+2026-05-10 01:13:36,920 [INFO] Authentication (publickey) successful!
+2026-05-10 01:13:37,225 [INFO] [chan 0] Opened sftp connection (server version 3)
+2026-05-10 01:13:37,225 [INFO] Connected to 129.212.179.98
+2026-05-10 01:20:59,084 [INFO] 👁️  Watching: C:\Suno_Restoration\Input
+2026-05-10 01:20:59,088 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 01:20:59,088 [INFO] 📡 Polling server every 30s for completed files
+2026-05-10 01:20:59,089 [INFO] ==================================================
+2026-05-10 01:20:59,089 [INFO] AARS Bridge is ACTIVE. Drop audio files into:
+2026-05-10 01:20:59,089 [INFO]   C:\Suno_Restoration\Input
+2026-05-10 01:20:59,089 [INFO] Restored files will appear in:
+2026-05-10 01:20:59,089 [INFO]   C:\Suno_Restoration\Output
+2026-05-10 01:20:59,089 [INFO] ==================================================
+2026-05-10 01:20:59,220 [INFO] Connected (version 2.0, client OpenSSH_9.6p1)
+2026-05-10 01:20:59,583 [INFO] Authentication (publickey) successful!
+2026-05-10 01:20:59,868 [INFO] [chan 0] Opened sftp connection (server version 3)
+2026-05-10 01:20:59,868 [INFO] Connected to 129.212.179.98
+2026-05-10 01:43:11,079 [INFO] 📥 1 completed file(s) found on server
+2026-05-10 01:43:11,124 [INFO] Downloading: /data/output/C.wav_restored.wav → C:\Suno_Restoration\Output\C.wav_restored.wav
+2026-05-10 01:43:16,145 [INFO] ✅ Downloaded C.wav_restored.wav — verified
+2026-05-10 01:44:46,992 [INFO] 📥 1 completed file(s) found on server
+2026-05-10 01:44:46,993 [INFO] Downloading: /data/output/C.wav_restored.wav → C:\Suno_Restoration\Output\C.wav_restored.wav
+2026-05-10 01:44:51,574 [INFO] ✅ Downloaded C.wav_restored.wav — verified
+2026-05-10 01:45:52,998 [INFO] 📥 1 completed file(s) found on server
+2026-05-10 01:45:53,032 [INFO] Downloading: /data/output/C.wav_restored.wav → C:\Suno_Restoration\Output\C.wav_restored.wav
+2026-05-10 01:45:58,542 [INFO] ✅ Downloaded C.wav_restored.wav — verified
+2026-05-10 01:46:52,666 [INFO] 📥 1 completed file(s) found on server
+2026-05-10 01:46:52,667 [INFO] Downloading: /data/output/C.wav_restored.wav → C:\Suno_Restoration\Output\C.wav_restored.wav
+2026-05-10 01:46:56,984 [INFO] ✅ Downloaded C.wav_restored.wav — verified
+2026-05-10 01:49:28,314 [INFO] 📥 1 completed file(s) found on server
+2026-05-10 01:49:28,315 [INFO] Downloading: /data/output/C.wav_restored.wav → C:\Suno_Restoration\Output\C.wav_restored.wav
+2026-05-10 01:49:30,391 [INFO] 📥 1 completed file(s) found on server
+2026-05-10 01:49:30,392 [INFO] Downloading: /data/output/C.wav_restored.wav → C:\Suno_Restoration\Output\C.wav_restored.wav
+2026-05-10 01:49:33,036 [ERROR] ❌ Download hash mismatch for C.wav_restored.wav
+2026-05-10 01:49:34,807 [INFO] ✅ Downloaded C.wav_restored.wav — verified
+2026-05-10 01:52:34,488 [INFO] 📥 1 completed file(s) found on server
+2026-05-10 01:52:34,493 [INFO] Downloading: /data/output/C.wav_restored.wav → C:\Suno_Restoration\Output\C.wav_restored.wav
+2026-05-10 01:52:36,451 [INFO] 📥 1 completed file(s) found on server
+2026-05-10 01:52:36,454 [INFO] Downloading: /data/output/C.wav_restored.wav → C:\Suno_Restoration\Output\C.wav_restored.wav
+2026-05-10 01:52:46,572 [INFO] ✅ Downloaded C.wav_restored.wav — verified
+2026-05-10 01:52:48,270 [ERROR] Download failed for /data/output/C.wav_restored.wav: list index out of range
+2026-05-10 01:58:49,817 [INFO] 📥 1 completed file(s) found on server
+2026-05-10 01:58:49,823 [INFO] Downloading: /data/output/C.wav_restored.wav → C:\Suno_Restoration\Output\C.wav_restored.wav
+2026-05-10 01:58:51,209 [INFO] 📥 1 completed file(s) found on server
+2026-05-10 01:58:51,213 [INFO] Downloading: /data/output/C.wav_restored.wav → C:\Suno_Restoration\Output\C.wav_restored.wav
+2026-05-10 01:59:02,644 [INFO] ✅ Downloaded C.wav_restored.wav — verified
+2026-05-10 01:59:03,319 [ERROR] Download failed for /data/output/C.wav_restored.wav: list index out of range

@@ -23,6 +23,7 @@ from memory import SwarmMemory
 INPUT_DIR = Path("/data/input")
 OUTPUT_DIR = Path("/data/output")
 REPORT_DIR = Path("/data/reports")
+INTERMEDIATE_DIR = Path("/data/intermediate")
 
 from rich.console import Console
 from rich.panel import Panel
@@ -76,7 +77,8 @@ def extract_tool_results(crew_output: str) -> dict:
     
     tool_names = [
         "soxr_vhq_upsampler", "transient_preservation_dsp",
-        "harmonic_spectral_exciter", "ffmpeg_pro_master"
+        "harmonic_spectral_exciter", "psychoacoustic_clarity_exciter",
+        "stereo_spatial_widener", "dynamic_boost_maximizer", "ffmpeg_pro_master"
     ]
     
     for tool in tool_names:
@@ -144,9 +146,10 @@ def process_track(track_path: Path, memory: SwarmMemory, attempt: int = 1):
         # Prepare inputs for the crew
         crew_inputs = {
             "audio_path": str(track_path.absolute()),
-            "filename": track_path.name,
+            "filename": track_path.stem,
             "spectral_json": json.dumps(spectral_data, indent=2),
-            "memory_briefing": memory_briefing
+            "memory_briefing": memory_briefing,
+            "mission_goal": "CONSUMER IMPACT (WOW FACTOR). Use spatial widening, clarity excitation and maximization to impress the general public."
         }
         
         result = crew.kickoff(inputs=crew_inputs)
@@ -242,7 +245,7 @@ def process_track(track_path: Path, memory: SwarmMemory, attempt: int = 1):
 
 def main():
     # Ensure directories exist
-    for d in [INPUT_DIR, OUTPUT_DIR, REPORT_DIR]:
+    for d in [INPUT_DIR, OUTPUT_DIR, REPORT_DIR, INTERMEDIATE_DIR]:
         d.mkdir(parents=True, exist_ok=True)
 
     # Initialize persistent memory
@@ -255,7 +258,10 @@ def main():
         border_style="cyan", title="🧠 Memory"
     ))
 
-    tracks = sorted(list(INPUT_DIR.glob("*.wav")) + list(INPUT_DIR.glob("*.mp3")))
+    tracks = []
+    for ext in ["*.wav", "*.WAV", "*.mp3", "*.MP3", "*.flac", "*.FLAC"]:
+        tracks.extend(list(INPUT_DIR.glob(ext)))
+    tracks = sorted(tracks)
 
     if not tracks:
         console.print("[yellow]📭 No tracks found in /data/input. Awaiting bridge...[/yellow]")
@@ -298,6 +304,12 @@ def main():
                 "qc_passed": False,
                 "failure_reason": str(e)
             })
+        finally:
+            import torch
+            import gc
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+            gc.collect()
 
     # Final summary
     console.print(Panel(

@@ -2,10 +2,26 @@
 crewai[litellm]
 pydantic
 pydantic_settings
+# DSP Core (CPU fallback)
 librosa
 scipy
 soundfile
 numpy
+
+# GPU/ROCm ML Accelerators (SOTA 2026)
+# Pre-installed in the ROCm image: torch, torchaudio
+diffusers
+transformers
+accelerate
+
+# Demucs dependencies (to allow --no-deps install of demucs core)
+dora-search
+einops
+julius>=0.2.3
+lameenc>=1.2
+openunmix
+
+# Utils
 scikit-learn
 rich
 requests

@@ -81,16 +81,19 @@ class AARSHub:
             console.print(f"[red]Local Error: {e}[/red]")
             return False
 
-    def exec_remote(self, cmd: str, capture: bool = False, retries: int = 2):
+    def exec_remote(self, cmd: str, capture: bool = False, retries: int = 2, status_msg: str = None):
         full_cmd = f'{SSH_BASE} "{cmd}"'
+        display_msg = status_msg or f"Executing: [dim]{cmd[:50]}...[/dim]"
+        
         for i in range(retries + 1):
             try:
                 if capture:
-                    result = subprocess.run(full_cmd, shell=True, capture_output=True, text=True, check=True)
-                    return result.stdout.strip()
+                    with console.status(f"[cyan]{display_msg}[/cyan]", spinner="dots"):
+                        result = subprocess.run(full_cmd, shell=True, capture_output=True, text=True, check=True)
+                        return result.stdout.strip()
                 else:
                     # Stream output for better UX
-                    return self.exec_remote_stream(full_cmd)
+                    return self.exec_remote_stream(full_cmd, display_msg)
             except subprocess.CalledProcessError as e:
                 if i < retries and e.returncode == 255:
                     console.print(f"[dim]  (SSH retry {i+1}/{retries}...)[/]")
@@ -101,16 +104,34 @@ class AARSHub:
                     self.handle_lockout()
                 raise e
 
-    def exec_remote_stream(self, full_cmd: str) -> bool:
-        """Runs a remote command and streams output to console."""
-        process = subprocess.Popen(
-            full_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding="utf-8"
-        )
-        for line in iter(process.stdout.readline, ""):
-            if line:
-                console.print(f"[dim]  remote:[/][white] {line.strip()}[/]")
+    def exec_remote_stream(self, full_cmd: str, status_msg: str = "Processing...") -> bool:
+        """Runs a remote command and streams output to console with a live view."""
+        from rich.live import Live
+        from rich.table import Table
         
-        process.wait()
+        lines_to_show = 5
+        output_buffer = []
+        
+        def get_renderable():
+            table = Table.grid(expand=True)
+            table.add_row(f"[bold cyan]⚙[/] [white]{status_msg}[/white]")
+            for line in output_buffer[-lines_to_show:]:
+                table.add_row(f"  [dim]↳[/] [grey50]{line}[/]")
+            return Panel(table, border_style="cyan", padding=(0, 1))
+
+        with Live(get_renderable(), refresh_per_second=10) as live:
+            process = subprocess.Popen(
+                full_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding="utf-8"
+            )
+            for line in iter(process.stdout.readline, ""):
+                if line:
+                    clean_line = line.strip()
+                    if clean_line:
+                        output_buffer.append(clean_line)
+                        live.update(get_renderable())
+            
+            process.wait()
+            
         if process.returncode != 0:
             raise subprocess.CalledProcessError(process.returncode, full_cmd)
         return True
@@ -157,8 +178,9 @@ class AARSHub:
             progress.advance(task1)
             
             # 1.3 Test Remote Connection
+            progress.update(task1, description="[cyan]Verifying SSH Handshake...")
             try:
-                self.exec_remote("echo 1")
+                hub.exec_remote("echo 1", capture=True, status_msg="Checking SSH connection")
             except:
                 self.handle_lockout()
             progress.advance(task1)
@@ -167,20 +189,21 @@ class AARSHub:
             task2 = progress.add_task("[magenta]PHASE 2: Hardening MI300X...", total=3)
             
             # 2.1 Upload scripts (Single connection)
-            progress.update(task2, description="[magenta]Uploading Infrastructure Scripts...")
-            self.exec_remote("mkdir -p /tmp/aars")
+            progress.update(task2, description="[magenta]Preparing remote environment...")
+            self.exec_remote("mkdir -p /tmp/aars", capture=True, status_msg="Creating /tmp/aars")
             scp_upload(str(INFRA_DIR), "/tmp/aars/")
             progress.advance(task2)
             
             # 2.2 Run Setup
-            progress.update(task2, description="[magenta]Installing Docker & UFW (Hold tight)...")
+            progress.update(task2, description="[magenta]Installing OS dependencies (Docker, ROCm)...")
             try:
-                self.exec_remote("chmod +x /tmp/aars/infra/*.sh && bash /tmp/aars/infra/setup_server.sh")
+                self.exec_remote("chmod +x /tmp/aars/infra/*.sh && bash /tmp/aars/infra/setup_server.sh", 
+                                 status_msg="Running Server Setup (this may take a while)")
             except subprocess.CalledProcessError as e:
                 if e.returncode == 255:
                     console.print("[yellow]Notice: Connection dropped during SSH reload. This is expected. Re-verifying...[/yellow]")
                     time.sleep(2)
-                    self.exec_remote("echo 1") # Verify re-connection
+                    self.exec_remote("echo 1", capture=True, status_msg="Re-verifying connection") # Verify re-connection
                 else:
                     raise e
             progress.advance(task2)
@@ -189,16 +212,18 @@ class AARSHub:
             task3 = progress.add_task("[yellow]PHASE 3: Deploying Qwen Swarm...", total=3)
             
             # Check if models are ALREADY running to save time
-            progress.update(task3, description="[yellow]Checking for existing Swarm models...")
+            progress.update(task3, description="[yellow]Probing for existing Swarm models...")
             q3_online = False
             try:
-                res = self.exec_remote("curl -s http://localhost:8000/v1/models | grep -q Qwen && echo 1 || echo 0", capture=True)
+                res = self.exec_remote("curl -s http://localhost:8000/v1/models | grep -q Qwen && echo 1 || echo 0", 
+                                       capture=True, status_msg="Checking Qwen3 (Port 8000)")
                 q3_online = "1" in res
             except: pass
             
             qa_online = False
             try:
-                res = self.exec_remote("curl -s http://localhost:8001/v1/models | grep -q Qwen && echo 1 || echo 0", capture=True)
+                res = self.exec_remote("curl -s http://localhost:8001/v1/models | grep -q Qwen && echo 1 || echo 0", 
+                                       capture=True, status_msg="Checking Qwen2-Audio (Port 8001)")
                 qa_online = "1" in res
             except: pass
             
@@ -207,14 +232,16 @@ class AARSHub:
                 progress.advance(task3, 2)
             else:
                 # 3.0 Purge ALL old containers (AURYGA leftovers + previous runs)
-                progress.update(task3, description="[yellow]Purging old containers (AURYGA cleanup)...")
-                self.exec_remote("docker rm -f $(docker ps -aq) 2>/dev/null || true")
+                progress.update(task3, description="[yellow]Cleaning up legacy containers...")
+                self.exec_remote("docker rm -f $(docker ps -aq) 2>/dev/null || true", 
+                                 capture=True, status_msg="Purging Docker containers")
                 progress.advance(task3)
                 
                 # 3.1 Deploy fresh
-                progress.update(task3, description="[yellow]Initializing Qwen3 Brain & Qwen2-Audio Hearing...")
+                progress.update(task3, description="[yellow]Waking up Brain (Qwen3) & Hearing (Qwen2-Audio)...")
                 try:
-                    self.exec_remote("bash /tmp/aars/infra/deploy_vllm.sh")
+                    self.exec_remote("bash /tmp/aars/infra/deploy_vllm.sh", 
+                                     status_msg="Deploying vLLM containers")
                 except subprocess.CalledProcessError as e:
                     err = e.stderr if e.stderr else str(e)
                     console.print(Panel(
@@ -249,9 +276,10 @@ class AARSHub:
 
     def ignite_phase_4(self):
         """Phase 4: Build Restoration Container"""
-        self.exec_remote("mkdir -p /opt/aars/pipeline")
+        self.exec_remote("mkdir -p /opt/aars/pipeline", capture=True, status_msg="Preparing pipeline workspace")
         scp_upload(str(PIPELINE_DIR), "/opt/aars/")
-        self.exec_remote("docker build -t aars-pipeline /opt/aars/pipeline/")
+        self.exec_remote("docker build -t aars-pipeline /opt/aars/pipeline/", 
+                         status_msg="Building Pipeline Container (this takes a moment)")
 
 # ─── Standard CLI Mapping ──────────────────────────────────
 
@@ -283,10 +311,14 @@ def cmd_status(args):
         console.print(Panel(table, border_style="dim"))
     except:
         hub.handle_lockout()
+    
+    # Also show the telemetry dashboard
+    _cmd_telemetry(args)
 
 def scp_upload(local: str, remote: str) -> int:
     cmd = f'{SCP_BASE} -r "{local}" {SERVER_USER}@{SERVER_IP}:"{remote}"'
-    return subprocess.call(cmd, shell=True, stdout=subprocess.DEVNULL)
+    with console.status(f"[magenta]Transferring {Path(local).name}...[/magenta]", spinner="bouncingBar"):
+        return subprocess.call(cmd, shell=True, stdout=subprocess.DEVNULL)
 
 # ─── Additional Commands ───────────────────────────────────
 
@@ -342,13 +374,21 @@ def cmd_run(args):
         hub.exec_remote(
             "docker run --rm --device /dev/kfd --device /dev/dri --group-add video "
             "-v /data:/data "
-            "-e VLLM_BASE_URL=http://localhost:8000/v1 "
-            "-e VLLM_AUDIO_URL=http://localhost:8001/v1 "
+            "-e VLLM_BASE_URL=http://127.0.0.1:8000/v1 "
+            "-e VLLM_AUDIO_URL=http://127.0.0.1:8001/v1 "
             "-e HSA_OVERRIDE_GFX_VERSION=9.4.2 "
             "--network host "
-            "aars-pipeline"
+            "aars-pipeline",
+            status_msg="Starting Audio Restoration Swarm"
         )
         console.print(Panel("[bold green]PIPELINE COMPLETE[/bold green]", border_style="green"))
+        
+        # Auto-fetch results
+        console.print("\n[bold cyan]🔄 Auto-fetching results...[/bold cyan]")
+        if not hasattr(args, 'dest'):
+            args.dest = None
+        cmd_download(args)
+        
     except subprocess.CalledProcessError as e:
         console.print(f"[red]Pipeline failed: {e}[/red]")
 
@@ -365,7 +405,7 @@ def cmd_upload(args):
         md5 = hashlib.md5(open(f, "rb").read()).hexdigest()
         console.print(f"[green]✅ {fname} (MD5: {md5[:12]}...)[/green]")
 
-def cmd_status(args):
+def _cmd_telemetry(args):
     """Show a dashboard of processed vs local files."""
     console.print(Align.center(BANNER))
     hub.log_phase(1, "AARS Global Status")

@@ -59,12 +59,22 @@ docker run -d \
     -e HIP_VISIBLE_DEVICES=0 \
     vllm/vllm-openai-rocm:latest \
     --model $MODEL_LLM \
-    --max-model-len 8192 \
-    --gpu-memory-utilization 0.75 \
+    --max-model-len 32768 \
+    --gpu-memory-utilization 0.65 \
     --trust-remote-code \
     --dtype auto \
     --enable-auto-tool-choice \
     --tool-call-parser hermes
+
+echo "[*] Waiting for Qwen3 to load..."
+for i in $(seq 1 60); do
+    if curl -s http://localhost:${PORT_LLM}/v1/models > /dev/null 2>&1; then
+        echo "[+] Port ${PORT_LLM} is READY!"
+        break
+    fi
+    echo "  Waiting port ${PORT_LLM}... ($i/60)"
+    sleep 5
+done
 
 # ─── Deploy Qwen2-Audio (Listener) ───────────────────
 echo ""
@@ -87,19 +97,14 @@ docker run -d \
     --trust-remote-code \
     --dtype auto
 
-# ─── Health Check ─────────────────────────────────────
-echo ""
-echo "[*] Waiting for models to load..."
-for port in $PORT_LLM $PORT_AUDIO; do
-    for i in $(seq 1 60); do
-        if curl -s http://localhost:${port}/v1/models > /dev/null 2>&1; then
-            echo "[+] Port ${port} is READY!"
-            curl -s http://localhost:${port}/v1/models | python3 -m json.tool
-            break
-        fi
-        echo "  Waiting port ${port}... ($i/60)"
-        sleep 5
-    done
+echo "[*] Waiting for Qwen2-Audio to load..."
+for i in $(seq 1 60); do
+    if curl -s http://localhost:${PORT_AUDIO}/v1/models > /dev/null 2>&1; then
+        echo "[+] Port ${PORT_AUDIO} is READY!"
+        break
+    fi
+    echo "  Waiting port ${PORT_AUDIO}... ($i/60)"
+    sleep 5
 done
 
 echo ""

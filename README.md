@@ -26,23 +26,32 @@ Esta capacidad de cómputo nos permite ejecutar modelos de lenguaje masivos (com
 
 ---
 
-## 🧠 Arquitectura del Sistema (OODA Loop)
+## 🧠 Arquitectura: El Enjambre Colaborativo (OODA Loop)
 
-El sistema opera bajo un flujo de mejora continua:
+AURA-DSP no es un pipeline lineal; es un **Swarm de Agentes de Misión Crítica** coordinados mediante un ciclo **OODA** (Observe, Orient, Decide, Act). Cada agente opera con autonomía sobre herramientas DSP específicas optimizadas para **AMD ROCm**.
 
-1.  **Análisis Espectral:** Escaneo profundo de la firma acústica, ruido de fondo y transitorios.
-2.  **Swarm Memory:** Consulta de éxitos previos para ajustar la estrategia.
-3.  **Ejecución del Enjambre (Crew):**
-    *   **Ingeniero Jefe:** Orquestador y estratega.
-    *   **Ingeniero de Sonido:** Especialista en EQ y masterización neuronal.
-    *   **Experto en Psicoacústica:** Calidez, claridad y expansión estéreo.
-    *   **Ingeniero Físico-Matemático:** Upsampling VHQ y preservación de transitorios.
-    *   **El Oyente:** Auditor de control de calidad final.
-4.  **Control de Calidad (QC):** Si el veredicto falla, el sistema ajusta parámetros y reintenta automáticamente.
+### Los Especialistas del Enjambre:
+
+1.  **Ingeniero de Sonido Jefe (Estratega):**
+    *   **Misión:** Orquestación y delegación. Analiza la huella espectral y consulta la **Swarm Memory** para diseñar la estrategia de restauración óptima.
+    *   **IA:** Coordinador central basado en CrewAI.
+
+2.  **Ingeniero Físico-Matemático:**
+    *   **Misión:** Precisión a nivel de muestra. Ejecuta upsampling de 96kHz (Soxr VHQ) y preservación de transitorios mediante transformadas de Hilbert, utilizando kernels de PyTorch acelerados por GPU.
+
+3.  **Experto en Psicoacústica:**
+    *   **Misión:** Impacto emocional y claridad. Aplica algoritmos de saturación asimétrica (calidez de tubo) y expansión estéreo Mid-Side (M/S) dinámica.
+
+4.  **Ingeniero de Sonido (Neural):**
+    *   **Misión:** Rebalanceo inteligente. Utiliza modelos **Demucs (HTDemucs)** para separar stems, aislar voces y reconstruir la estructura rítmica con coherencia de fase.
+
+5.  **El Oyente (QC Auditor):**
+    *   **Misión:** El guardián de la calidad. Compara cuantitativamente el audio original vs. procesado, midiendo deltas de **SNR**, ancho de banda y factor de cresta. Tiene poder de veto para forzar reintentos si el resultado no es perfecto.
 
 ---
 
-## 🛠 Instalación y Uso
+## 🚀 La Ventaja AMD: De Horas a Minutos
+
 
 ### Requisitos
 *   Hardware AMD con soporte **ROCm 7.x+**.

@@ -1810,3 +1810,215 @@
 2026-05-10 07:09:52,663 [INFO] Connecting to 129.212.179.98:22...
 2026-05-10 07:09:52,909 [INFO] Connecting to 129.212.179.98:22...
 2026-05-10 07:09:53,012 [ERROR] Failed to list /data/output: timed out
+2026-05-10 07:10:07,666 [ERROR] Failed to list /data/output: timed out
+2026-05-10 07:10:07,913 [ERROR] Failed to list /data/output: timed out
+2026-05-10 07:10:23,012 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 07:10:37,666 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 07:10:37,913 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 07:10:38,022 [ERROR] Failed to list /data/output: timed out
+2026-05-10 07:10:52,681 [ERROR] Failed to list /data/output: timed out
+2026-05-10 07:10:52,927 [ERROR] Failed to list /data/output: timed out
+2026-05-10 07:11:08,022 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 07:11:22,681 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 07:11:22,927 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 07:11:23,030 [ERROR] Failed to list /data/output: timed out
+2026-05-10 07:11:37,697 [ERROR] Failed to list /data/output: timed out
+2026-05-10 07:11:37,932 [ERROR] Failed to list /data/output: timed out
+2026-05-10 07:11:53,030 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 07:12:07,697 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 07:12:07,932 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 07:12:08,035 [ERROR] Failed to list /data/output: timed out
+2026-05-10 07:12:22,702 [ERROR] Failed to list /data/output: timed out
+2026-05-10 07:12:22,949 [ERROR] Failed to list /data/output: timed out
+2026-05-10 07:12:38,035 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 07:12:52,702 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 07:12:52,949 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 07:12:53,039 [ERROR] Failed to list /data/output: timed out
+2026-05-10 07:13:07,716 [ERROR] Failed to list /data/output: timed out
+2026-05-10 07:13:07,961 [ERROR] Failed to list /data/output: timed out
+2026-05-10 07:13:23,038 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 07:13:37,715 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 07:13:37,963 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 07:13:38,045 [ERROR] Failed to list /data/output: timed out
+2026-05-10 07:13:52,723 [ERROR] Failed to list /data/output: timed out
+2026-05-10 07:13:52,972 [ERROR] Failed to list /data/output: timed out
+2026-05-10 07:14:08,045 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 07:14:22,723 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 07:14:22,972 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 07:14:23,056 [ERROR] Failed to list /data/output: timed out
+2026-05-10 07:14:37,736 [ERROR] Failed to list /data/output: timed out
+2026-05-10 07:14:37,982 [ERROR] Failed to list /data/output: timed out
+2026-05-10 07:14:53,056 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 07:15:07,736 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 07:15:07,891 [INFO] Connected (version 2.0, client OpenSSH_9.6p1)
+2026-05-10 07:15:07,982 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 07:15:08,059 [ERROR] Failed to list /data/output: timed out
+2026-05-10 07:15:08,110 [INFO] Connected (version 2.0, client OpenSSH_9.6p1)
+2026-05-10 07:15:08,364 [INFO] Authentication (publickey) successful!
+2026-05-10 07:15:08,533 [INFO] Authentication (publickey) successful!
+2026-05-10 07:15:09,000 [INFO] [chan 0] Opened sftp connection (server version 3)
+2026-05-10 07:15:09,002 [INFO] Connected to 129.212.179.98
+2026-05-10 07:15:09,002 [INFO] [chan 0] Opened sftp connection (server version 3)
+2026-05-10 07:15:09,007 [INFO] Connected to 129.212.179.98
+2026-05-10 07:15:38,059 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 07:15:38,187 [INFO] Connected (version 2.0, client OpenSSH_9.6p1)
+2026-05-10 07:15:38,606 [INFO] Authentication (publickey) successful!
+2026-05-10 07:15:38,896 [INFO] [chan 0] Opened sftp connection (server version 3)
+2026-05-10 07:15:38,898 [INFO] Connected to 129.212.179.98
+2026-05-10 07:21:32,070 [INFO] 👁️  Watching: ./input
+2026-05-10 07:21:32,075 [INFO] Connecting to ${DROPLET_IP}:22...
+2026-05-10 07:21:32,075 [INFO] 📡 Polling server every 30s for completed files
+2026-05-10 07:21:32,076 [INFO] ==================================================
+2026-05-10 07:21:32,076 [INFO] AARS Bridge is ACTIVE. Drop audio files into:
+2026-05-10 07:21:32,076 [INFO]   ./input
+2026-05-10 07:21:32,076 [INFO] Restored files will appear in:
+2026-05-10 07:21:32,076 [INFO]   ./output
+2026-05-10 07:21:32,076 [INFO] ==================================================
+2026-05-10 07:21:32,089 [ERROR] Failed to list /data/output: [Errno 11001] getaddrinfo failed
+2026-05-10 07:22:02,088 [INFO] Connecting to ${DROPLET_IP}:22...
+2026-05-10 07:22:02,089 [ERROR] Failed to list /data/output: [Errno 11001] getaddrinfo failed
+2026-05-10 07:22:32,088 [INFO] Connecting to ${DROPLET_IP}:22...
+2026-05-10 07:22:32,089 [ERROR] Failed to list /data/output: [Errno 11001] getaddrinfo failed
+2026-05-10 07:23:16,797 [INFO] 👁️  Watching: ./input
+2026-05-10 07:23:16,798 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 07:23:16,798 [INFO] 📡 Polling server every 30s for completed files
+2026-05-10 07:23:16,798 [INFO] ==================================================
+2026-05-10 07:23:16,798 [INFO] AARS Bridge is ACTIVE. Drop audio files into:
+2026-05-10 07:23:16,798 [INFO]   ./input
+2026-05-10 07:23:16,798 [INFO] Restored files will appear in:
+2026-05-10 07:23:16,799 [INFO]   ./output
+2026-05-10 07:23:16,799 [INFO] ==================================================
+2026-05-10 07:23:16,928 [INFO] Connected (version 2.0, client OpenSSH_9.6p1)
+2026-05-10 07:23:17,293 [INFO] Authentication (publickey) successful!
+2026-05-10 07:23:17,579 [INFO] [chan 0] Opened sftp connection (server version 3)
+2026-05-10 07:23:17,579 [INFO] Connected to 129.212.179.98
+2026-05-10 07:27:50,068 [INFO] 📥 1 completed file(s) found on server
+2026-05-10 07:27:50,111 [INFO] Downloading: /data/output/A_restored.wav → ./output\A_restored.wav
+2026-05-10 07:28:01,493 [INFO] ✅ Downloaded A_restored.wav — verified
+2026-05-10 07:28:31,737 [INFO] 📥 2 completed file(s) found on server
+2026-05-10 07:28:31,747 [INFO] Downloading: /data/output/A_restored_upsampled.wav → ./output\A_restored_upsampled.wav
+2026-05-10 07:28:41,182 [INFO] ✅ Downloaded A_restored_upsampled.wav — verified
+2026-05-10 07:29:11,451 [INFO] 📥 2 completed file(s) found on server
+2026-05-10 07:29:41,694 [INFO] 📥 2 completed file(s) found on server
+2026-05-10 07:30:11,937 [INFO] 📥 3 completed file(s) found on server
+2026-05-10 07:30:11,939 [INFO] Downloading: /data/output/C_restored.wav → ./output\C_restored.wav
+2026-05-10 07:31:11,866 [ERROR] ❌ Download hash mismatch for C_restored.wav
+2026-05-10 07:31:42,109 [INFO] 📥 3 completed file(s) found on server
+2026-05-10 07:31:42,118 [INFO] Downloading: /data/output/C_restored.wav → ./output\C_restored.wav
+2026-05-10 07:31:51,782 [INFO] ✅ Downloaded C_restored.wav — verified
+2026-05-10 07:32:22,029 [INFO] 📥 3 completed file(s) found on server
+2026-05-10 07:32:52,294 [INFO] 📥 3 completed file(s) found on server
+2026-05-10 07:33:22,538 [INFO] 📥 3 completed file(s) found on server
+2026-05-10 07:33:52,783 [INFO] 📥 3 completed file(s) found on server
+2026-05-10 07:34:23,025 [INFO] 📥 3 completed file(s) found on server
+2026-05-10 07:34:53,268 [INFO] 📥 3 completed file(s) found on server
+2026-05-10 07:35:23,517 [INFO] 📥 4 completed file(s) found on server
+2026-05-10 07:35:23,518 [INFO] Downloading: /data/output/D_restored.wav → ./output\D_restored.wav
+2026-05-10 07:35:23,898 [INFO] ✅ Downloaded D_restored.wav — verified
+2026-05-10 07:35:54,171 [INFO] 📥 4 completed file(s) found on server
+2026-05-10 07:36:24,415 [INFO] 📥 4 completed file(s) found on server
+2026-05-10 07:36:54,659 [INFO] 📥 4 completed file(s) found on server
+2026-05-10 07:37:24,908 [INFO] 📥 4 completed file(s) found on server
+2026-05-10 07:37:55,157 [INFO] 📥 5 completed file(s) found on server
+2026-05-10 07:37:55,158 [INFO] Downloading: /data/output/Dobranoko_restored.wav → ./output\Dobranoko_restored.wav
+2026-05-10 07:38:03,651 [INFO] ✅ Downloaded Dobranoko_restored.wav — verified
+2026-05-10 07:38:33,916 [INFO] 📥 5 completed file(s) found on server
+2026-05-10 07:39:04,160 [INFO] 📥 5 completed file(s) found on server
+2026-05-10 07:39:34,404 [INFO] 📥 6 completed file(s) found on server
+2026-05-10 07:39:34,405 [INFO] Downloading: /data/output/E_restored.wav → ./output\E_restored.wav
+2026-05-10 07:40:55,200 [ERROR] ❌ Download hash mismatch for E_restored.wav
+2026-05-10 07:41:25,447 [INFO] 📥 6 completed file(s) found on server
+2026-05-10 07:41:25,448 [INFO] Downloading: /data/output/E_restored.wav → ./output\E_restored.wav
+2026-05-10 07:41:33,606 [INFO] ✅ Downloaded E_restored.wav — verified
+2026-05-10 07:42:03,867 [INFO] 📥 6 completed file(s) found on server
+2026-05-10 07:42:34,113 [INFO] 📥 6 completed file(s) found on server
+2026-05-10 07:43:04,360 [INFO] 📥 7 completed file(s) found on server
+2026-05-10 07:43:04,363 [INFO] Downloading: /data/output/F_restored.wav → ./output\F_restored.wav
+2026-05-10 07:43:35,399 [ERROR] ❌ Download hash mismatch for F_restored.wav
+2026-05-10 07:44:05,646 [INFO] 📥 7 completed file(s) found on server
+2026-05-10 07:44:05,648 [INFO] Downloading: /data/output/F_restored.wav → ./output\F_restored.wav
+2026-05-10 07:44:14,507 [INFO] ✅ Downloaded F_restored.wav — verified
+2026-05-10 07:44:44,779 [INFO] 📥 7 completed file(s) found on server
+2026-05-10 07:45:15,024 [INFO] 📥 8 completed file(s) found on server
+2026-05-10 07:45:15,027 [INFO] Downloading: /data/output/G_restored.wav → ./output\G_restored.wav
+2026-05-10 07:48:22,988 [ERROR] ❌ Download hash mismatch for G_restored.wav
+2026-05-10 07:48:53,249 [INFO] 📥 9 completed file(s) found on server
+2026-05-10 07:48:53,265 [INFO] Downloading: /data/output/H_restored.wav → ./output\H_restored.wav
+2026-05-10 07:49:03,205 [INFO] ✅ Downloaded H_restored.wav — verified
+2026-05-10 07:49:03,244 [INFO] Downloading: /data/output/G_restored.wav → ./output\G_restored.wav
+2026-05-10 07:49:15,515 [INFO] ✅ Downloaded G_restored.wav — verified
+2026-05-10 07:49:45,763 [INFO] 📥 9 completed file(s) found on server
+2026-05-10 07:50:16,020 [INFO] 📥 9 completed file(s) found on server
+2026-05-10 07:50:46,266 [INFO] 📥 10 completed file(s) found on server
+2026-05-10 07:50:46,269 [INFO] Downloading: /data/output/I_restored.wav → ./output\I_restored.wav
+2026-05-10 07:52:59,422 [ERROR] ❌ Download hash mismatch for I_restored.wav
+2026-05-10 07:53:29,668 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 07:53:29,671 [INFO] Downloading: /data/output/I_restored.wav → ./output\I_restored.wav
+2026-05-10 07:53:42,116 [INFO] ✅ Downloaded I_restored.wav — verified
+2026-05-10 07:53:42,136 [INFO] Downloading: /data/output/J_restored.wav → ./output\J_restored.wav
+2026-05-10 07:53:51,769 [INFO] ✅ Downloaded J_restored.wav — verified
+2026-05-10 07:54:22,029 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 07:54:52,442 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 07:55:22,710 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 07:55:53,068 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 07:56:23,317 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 07:56:53,564 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 07:57:23,811 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 07:57:54,060 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 07:58:24,317 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 07:58:54,567 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 07:59:24,812 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 07:59:55,061 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 08:00:25,309 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 08:00:55,555 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 08:01:25,807 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 08:01:56,074 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 08:02:26,323 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 08:02:56,577 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 08:03:26,824 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 08:03:57,072 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 08:04:27,323 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 08:04:57,573 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 08:05:27,824 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 08:05:58,072 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 08:06:28,317 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 08:06:58,563 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 08:07:28,810 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 08:07:59,059 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 08:08:29,316 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 08:08:59,567 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 08:09:29,815 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 08:10:00,071 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 08:10:30,321 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 08:11:00,573 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 08:11:30,821 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 08:12:01,071 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 08:12:31,372 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 08:13:01,651 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 08:13:31,898 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 08:14:02,144 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 08:14:32,389 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 08:15:02,638 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 08:15:32,891 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 08:16:03,140 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 08:16:33,387 [INFO] 📥 11 completed file(s) found on server
+2026-05-10 08:17:03,403 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 08:17:18,449 [ERROR] Failed to list /data/output: timed out
+2026-05-10 08:17:48,450 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 08:18:03,457 [ERROR] Failed to list /data/output: timed out
+2026-05-10 08:18:33,458 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 08:18:48,463 [ERROR] Failed to list /data/output: timed out
+2026-05-10 08:19:18,463 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 08:19:33,471 [ERROR] Failed to list /data/output: timed out
+2026-05-10 08:20:03,472 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 08:20:18,481 [ERROR] Failed to list /data/output: timed out
+2026-05-10 08:20:48,482 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 08:21:03,484 [ERROR] Failed to list /data/output: timed out
+2026-05-10 08:21:33,485 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 08:21:48,489 [ERROR] Failed to list /data/output: timed out
+2026-05-10 08:22:18,490 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 08:22:33,493 [ERROR] Failed to list /data/output: timed out
+2026-05-10 08:23:03,493 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 08:23:18,502 [ERROR] Failed to list /data/output: timed out
+2026-05-10 08:23:48,502 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 08:24:03,510 [ERROR] Failed to list /data/output: timed out

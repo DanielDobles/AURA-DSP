@@ -1,2 +1,13 @@
 D_restored.wav
 A_restored.wav
+A_restored.wav
+A_restored_upsampled.wav
+C_restored.wav
+D_restored.wav
+Dobranoko_restored.wav
+E_restored.wav
+F_restored.wav
+H_restored.wav
+G_restored.wav
+I_restored.wav
+J_restored.wav

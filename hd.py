@@ -106,7 +106,6 @@ class AARSHub:
                             result = subprocess.run(full_cmd, shell=True, capture_output=True, text=True, check=True)
                             return result.stdout.strip()
                 else:
-                    # Stream output for better UX
                     return self.exec_remote_stream(full_cmd, display_msg)
             except subprocess.CalledProcessError as e:
                 if i < retries and e.returncode == 255:
@@ -119,56 +118,60 @@ class AARSHub:
                 raise e
 
     def exec_remote_stream(self, full_cmd: str, status_msg: str = "Processing...") -> bool:
-        """Runs a remote command and streams output to console with a live view."""
+        """Runs a remote command and streams output to console with a gaming-style live view."""
         from rich.live import Live
         from rich.table import Table
         from rich.spinner import Spinner
+        from rich.text import Text
         
         lines_to_show = 8
         output_buffer = []
+        start_time = time.time()
         
         def get_renderable():
+            elapsed = time.time() - start_time
+            pulse = abs(math.sin(elapsed * 2))
+            pulse_color = "cyan" if pulse > 0.5 else "blue"
             table = Table.grid(expand=True)
-            # Use a real moving spinner
-            table.add_row(f"[bold cyan]{Spinner('dots', style='cyan').render(time.time())}[/] [white]{status_msg}[/white]")
+            header = Text.assemble(
+                (f" {Spinner('moon', style='cyan').render(time.time())} ", "bold cyan"),
+                (f"AARS RADAR | ", "bold white"),
+                (f"{status_msg}", "cyan"),
+                (f" | ", "dim"),
+                (f"{elapsed:.1f}s", "bold yellow")
+            )
+            table.add_row(header)
+            scan_pos = int((elapsed * 10) % 40)
+            scan_bar = [" "] * 40
+            scan_bar[scan_pos] = "█"
+            if scan_pos > 0: scan_bar[scan_pos-1] = "▓"
+            if scan_pos < 39: scan_bar[scan_pos+1] = "▓"
+            table.add_row(f"[dim]  └─[[/{pulse_color}]{''.join(scan_bar)}[dim]]─┘[/]")
             for line in output_buffer[-lines_to_show:]:
-                table.add_row(f"  [dim]↳[/] [grey50]{line}[/]")
-            return Panel(table, border_style="cyan", padding=(0, 1))
+                clean_line = line[:80] + "..." if len(line) > 80 else line
+                table.add_row(f"    [dim]↳[/] [grey50]{clean_line}[/]")
+            return Panel(table, border_style=pulse_color, padding=(0, 1), title="[bold white]MI300X SWARM LIVE[/]", title_align="left")
 
-        with Live(get_renderable(), refresh_per_second=12) as live:
+        with Live(get_renderable(), refresh_per_second=15, transient=False) as live:
             process = subprocess.Popen(
                 full_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding="utf-8", bufsize=1
             )
-            
-            # Non-blocking read using a thread and queue
             q = queue.Queue()
             def reader():
-                for char in iter(lambda: process.stdout.read(1), ''):
-                    q.put(char)
+                for line in iter(process.stdout.readline, ''):
+                    if line: q.put(line)
                 process.stdout.close()
-            
             t = threading.Thread(target=reader, daemon=True)
             t.start()
-            
-            partial_line = ""
             while True:
-                # Try to get characters from the queue without blocking for too long
                 try:
                     while True:
-                        char = q.get_nowait()
-                        if char == '\n' or char == '\r':
-                            if partial_line.strip():
-                                if char == '\r' and output_buffer and len(partial_line) > 10:
-                                    output_buffer[-1] = partial_line.strip()
-                                else:
-                                    output_buffer.append(partial_line.strip())
-                            partial_line = ""
-                        else:
-                            partial_line += char
+                        line = q.get_nowait()
+                        if line.strip():
+                            output_buffer.append(line.strip())
                 except queue.Empty:
                     pass
                 
-                # Update spinner/live view
                 live.update(get_renderable())
                 
                 if not t.is_alive() and q.empty():

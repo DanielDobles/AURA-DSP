@@ -18,6 +18,14 @@ import yaml
 import paramiko
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
+from dotenv import load_dotenv
+
+# Load .env from project root
+load_dotenv(Path(__file__).parent.parent / ".env")
+
+# Force UTF-8 for Windows console
+if sys.platform == "win32":
+    sys.stdout.reconfigure(encoding="utf-8")
 
 # ─── Logging ───────────────────────────────────────────────
 logging.basicConfig(
@@ -35,7 +43,15 @@ def load_config(path: str = None) -> dict:
     if path is None:
         path = Path(__file__).parent / "config.yaml"
     with open(path, "r") as f:
-        return yaml.safe_load(f)
+        content = f.read()
+        # Simple expansion of ${VAR}
+        import re
+        def replacer(match):
+            val = os.getenv(match.group(1), match.group(0))
+            # Escape backslashes for YAML double-quotes
+            return val.replace("\\", "\\\\")
+        content = re.sub(r"\${([^}]+)}", replacer, content)
+        return yaml.safe_load(content)
 
 # ─── SFTP Client ───────────────────────────────────────────
 class SFTPBridge:

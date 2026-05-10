@@ -1,0 +1,13 @@
+2026-05-10 07:22:10,350 [INFO] 👁️  Watching: ./input
+2026-05-10 07:22:10,351 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 07:22:10,351 [INFO] 📡 Polling server every 30s for completed files
+2026-05-10 07:22:10,351 [INFO] ==================================================
+2026-05-10 07:22:10,351 [INFO] AARS Bridge is ACTIVE. Drop audio files into:
+2026-05-10 07:22:10,351 [INFO]   ./input
+2026-05-10 07:22:10,351 [INFO] Restored files will appear in:
+2026-05-10 07:22:10,352 [INFO]   ./output
+2026-05-10 07:22:10,352 [INFO] ==================================================
+2026-05-10 07:22:10,485 [INFO] Connected (version 2.0, client OpenSSH_9.6p1)
+2026-05-10 07:22:10,856 [INFO] Authentication (publickey) successful!
+2026-05-10 07:22:11,341 [INFO] [chan 0] Opened sftp connection (server version 3)
+2026-05-10 07:22:11,341 [INFO] Connected to 129.212.179.98

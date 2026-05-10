@@ -28,7 +28,8 @@ def aero_super_resolution(input_path: str, output_path: str) -> str:
         )
         if result.returncode == 0:
             return f"SUCCESS: Super-resolved audio saved to {output_path}"
-        return f"ERROR: AERO failed: {result.stderr[:300]}"
+        error_msg = f"STDOUT: {result.stdout}\nSTDERR: {result.stderr}"
+        return f"ERROR: AERO failed:\n{error_msg[-5000:]}"
     except Exception as e:
         return f"ERROR: {str(e)}"
 
@@ -51,7 +52,8 @@ def deepfilter_denoise(input_path: str, output_path: str) -> str:
         )
         if result.returncode == 0:
             return f"SUCCESS: Denoised audio saved to {output_path}"
-        return f"ERROR: DeepFilter failed: {result.stderr[:300]}"
+        error_msg = f"STDOUT: {result.stdout}\nSTDERR: {result.stderr}"
+        return f"ERROR: DeepFilter failed:\n{error_msg[-5000:]}"
     except Exception as e:
         return f"ERROR: {str(e)}"
 
@@ -113,3 +115,37 @@ def ffmpeg_render(input_path: str, output_path: str, sample_rate: int = 44100, b
         return f"ERROR: FFmpeg failed: {result.stderr[:300]}"
     except Exception as e:
         return f"ERROR: {str(e)}"
+
+
+@tool("scipy_emergency_denoise")
+def scipy_emergency_denoise(input_path: str, output_path: str) -> str:
+    """Robust CPU-based denoising using SciPy. 
+    USE THIS AS A FALLBACK if specialized tools (AERO, DeepFilter) fail.
+    It performs basic noise reduction and spectral gating.
+    Args:
+        input_path: Path to the input audio file.
+        output_path: Path where the processed file will be saved.
+    """
+    try:
+        import numpy as np
+        from scipy.io import wavfile
+        from scipy import signal
+
+        rate, data = wavfile.read(input_path)
+        if data.dtype != np.float32:
+            data = data.astype(np.float32) / 32768.0
+
+        # Basic spectral gate (very rough emergency denoise)
+        f, t, Zxx = signal.stft(data, rate, nperseg=1024)
+        abs_Zxx = np.abs(Zxx)
+        mask = abs_Zxx > (np.mean(abs_Zxx) * 0.5)
+        Zxx_cleaned = Zxx * mask
+        _, data_cleaned = signal.istft(Zxx_cleaned, rate)
+
+        # Normalize
+        data_cleaned = data_cleaned / (np.max(np.abs(data_cleaned)) + 1e-6)
+        
+        wavfile.write(output_path, rate, (data_cleaned * 32767).astype(np.int16))
+        return f"SUCCESS: Emergency CPU denoise completed at {output_path}"
+    except Exception as e:
+        return f"ERROR: Emergency denoise failed: {str(e)}"

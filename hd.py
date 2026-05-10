@@ -26,6 +26,7 @@ try:
     from rich.table import Table
     from rich.align import Align
     from rich.live import Live
+    from rich import box
     HAS_RICH = True
 except ImportError:
     print("Error: 'rich' library not found. Run: pip install rich")
@@ -38,7 +39,7 @@ SERVER_IP = "129.212.179.98"
 SERVER_USER = "root"
 SSH_KEY = os.path.expanduser("~/.ssh/id_gpu_droplet")
 
-SSH_OPTS = "-o StrictHostKeyChecking=no -o ConnectTimeout=10"
+SSH_OPTS = "-o StrictHostKeyChecking=no -o ConnectTimeout=60 -o ConnectionAttempts=5"
 SSH_BASE = f'ssh {SSH_OPTS} -i "{SSH_KEY}" {SERVER_USER}@{SERVER_IP}'
 SCP_BASE = f'scp {SSH_OPTS} -i "{SSH_KEY}"'
 
@@ -337,7 +338,6 @@ def cmd_gpu(args):
 def cmd_run(args):
     """Run the audio restoration pipeline."""
     console.print(Align.center(BANNER))
-    hub.log_phase(1, "Running Audio Restoration Pipeline")
     try:
         hub.exec_remote(
             "docker run --rm --device /dev/kfd --device /dev/dri --group-add video "
@@ -365,21 +365,83 @@ def cmd_upload(args):
         md5 = hashlib.md5(open(f, "rb").read()).hexdigest()
         console.print(f"[green]✅ {fname} (MD5: {md5[:12]}...)[/green]")
 
+def cmd_status(args):
+    """Show a dashboard of processed vs local files."""
+    console.print(Align.center(BANNER))
+    hub.log_phase(1, "AARS Global Status")
+    
+    # Remote files
+    remote_input = hub.exec_remote("ls /data/input/ 2>/dev/null", capture=True)
+    remote_output = hub.exec_remote("ls /data/output/ 2>/dev/null", capture=True)
+    remote_reports = hub.exec_remote("ls /data/reports/ 2>/dev/null", capture=True)
+    
+    # Local files
+    local_output = list((PROJECT_ROOT / "output").glob("*"))
+    
+    table = Table(title="Mission Telemetry", box=box.ROUNDED)
+    table.add_column("Track", style="cyan")
+    table.add_column("Status", style="magenta")
+    table.add_column("Remote Size", justify="right")
+    table.add_column("Local Sync", justify="center")
+    
+    inputs = [f.strip() for f in remote_input.split("\n") if f.strip()]
+    outputs = [f.strip() for f in remote_output.split("\n") if f.strip()]
+    
+    for track in sorted(inputs):
+        stem = Path(track).stem
+        restored_name = f"{stem}_restored.wav"
+        
+        status = "[yellow]PENDING[/]"
+        size = "-"
+        local = "[red]✗[/]"
+        
+        if restored_name in outputs:
+            status = "[green]RESTORED[/]"
+            size_raw = hub.exec_remote(f"du -sh /data/output/{restored_name} | cut -f1", capture=True).strip()
+            size = size_raw if size_raw else "?"
+            
+            if any(f.name == restored_name for f in local_output):
+                local = "[green]✓[/]"
+        
+        table.add_row(track, status, size, local)
+        
+    console.print(table)
+    console.print(f"\n[dim]Total Local Files: {len(local_output)} | Reports: {len(remote_reports.split())}[/dim]")
+
 def cmd_download(args):
     """Download completed files from server."""
     console.print(Align.center(BANNER))
     local_out = args.dest or str(PROJECT_ROOT / "output")
     os.makedirs(local_out, exist_ok=True)
+    
+    hub.log_phase(1, f"Syncing results to {local_out}")
+    
     result = hub.exec_remote("ls /data/output/ 2>/dev/null", capture=True)
     if not result:
-        console.print("[yellow]No completed files on server.[/yellow]")
+        console.print("[yellow]No completed files found on server.[/yellow]")
         return
+        
     files = [f.strip() for f in result.split("\n") if f.strip()]
-    for f in files:
-        console.print(f"[dim]  ▶ {f}[/dim]")
-        cmd = f'{SCP_BASE} -r {SERVER_USER}@{SERVER_IP}:"/data/output/{f}" "{os.path.join(local_out, f)}"'
-        subprocess.call(cmd, shell=True)
-    console.print(f"[green]✅ {len(files)} file(s) saved to {local_out}[/green]")
+    
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(),
+        console=console
+    ) as progress:
+        task = progress.add_task("[cyan]Downloading tracks...", total=len(files))
+        for f in files:
+            progress.update(task, description=f"Fetching {f}...")
+            # Check if file exists locally to avoid re-downloading large files
+            if os.path.exists(os.path.join(local_out, f)):
+                 progress.advance(task)
+                 continue
+                 
+            cmd = f'{SCP_BASE} -q -r {SERVER_USER}@{SERVER_IP}:"/data/output/{f}" "{os.path.join(local_out, f)}"'
+            subprocess.call(cmd, shell=True)
+            progress.advance(task)
+            
+    console.print(f"\n[bold green]✅ Sync Complete![/bold green] Check your local '{Path(local_out).name}' folder.")
 
 def cmd_purge(args):
     """Kill ALL containers on the server."""
@@ -399,6 +461,7 @@ def main():
     sub.add_parser("ignite",   help="🔥 System deployment")
     sub.add_parser("build",    help="🔨 Rebuild restoration container")
     sub.add_parser("run",      help="▶  Execute restoration")
+    sub.add_parser("status",   help="📊 Mission telemetry & local sync status")
     sub.add_parser("clean",    help="🧹 Clear server reports/output")
     sub.add_parser("gpu",      help="🏎️  GPU status (rocm-smi)")
     sub.add_parser("purge",    help="🧹 Kill ALL containers")
@@ -413,8 +476,11 @@ def main():
     p_up = sub.add_parser("upload", help="⬆️  Upload files to server")
     p_up.add_argument("files", nargs="+")
 
-    p_dl = sub.add_parser("download", help="⬇️  Download completed files")
+    p_dl = sub.add_parser("fetch", help="⬇️  Download restored files (alias: download)")
     p_dl.add_argument("--dest", default=None)
+    
+    # Also keep 'download' as an alias if needed, but fetch is better
+    sub.add_parser("download", help="⬇️  Download restored files")
 
     args = parser.parse_args()
 
@@ -422,11 +488,13 @@ def main():
         "ignite": cmd_ignite,
         "build": cmd_build,
         "run": cmd_run,
+        "status": cmd_status,
         "clean": cmd_clean,
         "logs": cmd_logs,
         "gpu": cmd_gpu,
         "upload": cmd_upload,
         "download": cmd_download,
+        "fetch": cmd_download,
         "purge": cmd_purge,
     }
 

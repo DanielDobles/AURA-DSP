@@ -38,16 +38,11 @@ class AURACrew:
     def architect(self) -> Agent:
         return Agent(
             role='Lead Audio Architect',
-            goal='Design the perfect restoration pipeline for each track',
-            backstory="""You are a world-class mastering engineer with 30 years of experience.
-            You interpret technical spectral data and multimodal audio reports to decide 
-            exactly which AI models (AERO, DeepFilterNet, ACE-Step) should be applied 
-            and in what order to achieve transparent, high-fidelity sound.
-            
+            goal='Design a restoration plan for {audio_path}. Choose the best tools from the available toolset.',
+            backstory="""You design the blueprint for restoration. You prioritize quality but are realistic about what tools can do.
             Rules:
             - If cutoff_freq < 16000Hz → MUST use aero_super_resolution first
             - If noise_floor_db > -50dB → MUST use deepfilter_denoise
-            - If the audiophile detects overlapping instruments → consider ace_step_separation
             - Always finish with ffmpeg_render to standardize output format""",
             llm=llm_brain,
             verbose=True,
@@ -57,18 +52,9 @@ class AURACrew:
     def audiophile(self) -> Agent:
         return Agent(
             role='Multimodal Audiophile Analyst',
-            goal='Listen to the audio and detect subjective artifacts that DSP misses',
-            backstory="""You are the "ears" of the system. You use Qwen2-Audio to hear 
-            compression artifacts, metallic cymbals, or "underwater" sounds typical 
-            of Suno/Udio generation. You provide a human-like description of what 
-            needs fixing.
-            
-            Focus on:
-            - Metallic or ringing high frequencies (vocoder artifacts)
-            - "Underwater" or muffled quality (bandwidth limitation)
-            - Inconsistent stereo image
-            - Rhythmic clicking or digital glitches
-            - Unnatural vocal timbre""",
+            goal='Analyze the audio file {audio_path} and identify subjective artifacts using spectral data {spectral_data}.',
+            backstory="""You are a world-class audio engineer. You look at data and 'hear' the problems: hiss, muffled frequencies, glitches.
+            You detect "underwater" sounds typical of Suno/Udio generation and provide a human-like description of what needs fixing.""",
             llm=llm_audio,
             verbose=True
         )
@@ -76,26 +62,31 @@ class AURACrew:
     def surgeon(self) -> Agent:
         return Agent(
             role='DSP Surgeon',
-            goal='Execute the restoration tools with surgical precision',
-            backstory="""You are an expert in command-line audio processing. 
-            You take the instructions from the Architect and run the specific 
-            ROCm-optimized tools. 
-            
-            CRITICAL: You must ALWAYS execute the tool for every step of the plan. 
-            Do NOT just describe what you will do. RUN the tool, wait for the 
-            SUCCESS or ERROR message, and then proceed to the next tool in the plan.
-            If a tool fails, report the error exactly.
-            
-            Your environment is an AMD MI300X with ROCm. Ensure bit-perfect execution.""",
+            goal='Execute the restoration plan for {audio_path}. If a tool fails (ERROR), you MUST find an alternative way to process the file (e.g., use a different tool or try a fallback strategy).',
+            backstory="""You are the expert executioner of DSP tools. You don't give up. 
+            Your environment is an AMD MI300X with ROCm. If a GPU tool fails, you try another enhancer or a CPU fallback.
+            You must ALWAYS execute the tool and report the SUCCESS or ERROR message exactly.""",
             llm=llm_brain,
             tools=self.SURGEON_TOOLS,
             verbose=True,
             allow_delegation=False
         )
 
+    def controller(self) -> Agent:
+        return Agent(
+            role='AARS Mission Controller',
+            goal='Ensure the mission for {audio_path} is completed. If the Surgeon reports a technical error, you MUST analyze the log and instruct the Surgeon on an alternative strategy.',
+            backstory="""You are the SRE (Site Reliability Engineer) of the swarm. Your job is zero downtime. 
+            If the environment is broken for one tool (e.g. ABI mismatch, CUDA error), you pivot to another strategy or tool. 
+            You are obsessed with finishing the queue with the best possible result.""",
+            llm=llm_brain,
+            verbose=True,
+            allow_delegation=True
+        )
+
     def build_crew(self) -> Crew:
         return Crew(
-            agents=[self.architect(), self.audiophile(), self.surgeon()],
+            agents=[self.architect(), self.audiophile(), self.surgeon(), self.controller()],
             process=Process.sequential,
             verbose=True
         )

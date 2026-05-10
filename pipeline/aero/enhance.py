@@ -5,6 +5,14 @@ import torchaudio
 import os
 
 def enhance(input_path: str, output_path: str, sr: int):
+    print(f"[AERO] --- GPU TELEMETRY ---")
+    print(f"[AERO] Torch version: {torch.__version__}")
+    print(f"[AERO] CUDA available: {torch.cuda.is_available()}")
+    if torch.cuda.is_available():
+        print(f"[AERO] Current device: {torch.cuda.current_device()}")
+        print(f"[AERO] Device name: {torch.cuda.get_device_name(0)}")
+        print(f"[AERO] --- END TELEMETRY ---")
+    
     print(f"[AERO] Initializing Super-Resolution model on GPU...")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"[AERO] Using device: {device}")
@@ -12,7 +20,9 @@ def enhance(input_path: str, output_path: str, sr: int):
     try:
         # Load audio
         waveform, sample_rate = torchaudio.load(input_path)
+        print(f"[AERO] Loaded audio: {waveform.shape} @ {sample_rate}Hz")
         waveform = waveform.to(device)
+        print(f"[AERO] Waveform moved to device.")
         
         # Simulate processing by applying a small gain/EQ on GPU
         # In a real scenario, this would pass through a deep learning model

@@ -110,7 +110,10 @@ def extract_tool_results(crew_output: str) -> dict:
     tool_names = [
         "soxr_vhq_upsampler", "transient_preservation_dsp",
         "harmonic_spectral_exciter", "psychoacoustic_clarity_exciter",
-        "stereo_spatial_widener", "dynamic_boost_maximizer", "ffmpeg_pro_master"
+        "stereo_spatial_widener", "dynamic_boost_maximizer", "ffmpeg_pro_master",
+        # FXSound Exact DSP Ports
+        "fxsound_bass_boost", "fxsound_aural_exciter",
+        "fxsound_dynamic_maximizer", "fxsound_mastering_chain"
     ]
     
     for tool in tool_names:

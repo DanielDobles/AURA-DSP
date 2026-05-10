@@ -20,3 +20,4 @@ id_gpu_droplet*
 
 # Logs (may contain server IPs)
 bridge/*.log
+fxsound-app-main/*

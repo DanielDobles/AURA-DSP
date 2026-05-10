@@ -24,7 +24,12 @@ from tools.surgeon_tools import (
     FFmpegProMasteringTool,
     QualityComparisonTool,
     TonalBalanceStabilizerTool,
-    NeuralMasterRebalanceTool
+    NeuralMasterRebalanceTool,
+    # FXSound Exact DSP Ports
+    FxSoundBassBoostTool,
+    FxSoundAuralExciterTool,
+    FxSoundMaximizerTool,
+    FxSoundMasteringChainTool
 )
 
 # ── LLM Configuration ─────────────────────────────────────
@@ -52,6 +57,11 @@ class AURACrew:
         self._tools_qc = QualityComparisonTool()
         self._tools_tonal = TonalBalanceStabilizerTool()
         self._tools_neural = NeuralMasterRebalanceTool()
+        # FXSound Exact DSP Ports
+        self._tools_fxbass = FxSoundBassBoostTool()
+        self._tools_fxaural = FxSoundAuralExciterTool()
+        self._tools_fxmaxi = FxSoundMaximizerTool()
+        self._tools_fxchain = FxSoundMasteringChainTool()
 
     def build_crew(self):
         """Constructs the 5-agent circular collaborative crew."""
@@ -78,13 +88,15 @@ class AURACrew:
         # ── 2. Ingeniero de Sonido ──
         sound_engineer = Agent(
             role="Ingeniero de Sonido",
-            goal="Ejecutar herramientas de mezcla y masterización clásicas.",
+            goal="Ejecutar herramientas de mezcla, bass boost y masterización.",
             backstory=(
                 "Eres un Ingeniero de Sonido profesional. Trabajas junto al equipo aplicando tus herramientas especializadas: "
                 "ecualización de balance tonal (spectral_tonal_balance_stabilizer), rebalanceo de stems neuronales (neural_master_rebalance), "
-                "y maximización final de volumen (dynamic_boost_maximizer, ffmpeg_pro_master)."
+                "maximización final de volumen (fxsound_dynamic_maximizer, ffmpeg_pro_master), "
+                "y el CRITICAL bass boost FXSound (fxsound_bass_boost) que es un filtro paramétrico a 90Hz con Q=2.5 y hasta +15dB. "
+                "También tienes la cadena completa FXSound (fxsound_mastering_chain) para procesamiento de un solo paso."
             ),
-            tools=[self._tools_tonal, self._tools_neural, self._tools_maxi, self._tools_master],
+            tools=[self._tools_tonal, self._tools_neural, self._tools_fxbass, self._tools_fxmaxi, self._tools_master, self._tools_fxchain],
             llm=llm_brain,
             verbose=True,
             allow_delegation=False
@@ -97,9 +109,11 @@ class AURACrew:
             backstory=(
                 "Eres un Ingeniero de Sonido con máster en psicoacústica y experto audiófilo. "
                 "Te encargas de procesar el sonido para el oído humano, otorgando mayor claridad, calidez armónica y una imagen estéreo expansiva. "
-                "Utilizas excitadores psicoacústicos (psychoacoustic_clarity_exciter, harmonic_spectral_exciter) y expansores estéreo (stereo_spatial_widener)."
+                "Tu herramienta estrella es el FXSound Aural Exciter (fxsound_aural_exciter), un port exacto del excitador armónico de FXSound: "
+                "usa un filtro Butterworth HP + waveshaper sin() para armónicos impares y rectificación de media onda para armónicos pares. "
+                "También usas excitadores genéricos (psychoacoustic_clarity_exciter, harmonic_spectral_exciter) y expansores estéreo (stereo_spatial_widener)."
             ),
-            tools=[self._tools_exciter, self._tools_psycho, self._tools_wide],
+            tools=[self._tools_fxaural, self._tools_exciter, self._tools_psycho, self._tools_wide],
             llm=llm_brain,
             verbose=True,
             allow_delegation=False

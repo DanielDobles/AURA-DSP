@@ -7,12 +7,14 @@
 
 import argparse
 import hashlib
+import math
 import os
 import subprocess
 import sys
 import time
 import threading
 import queue
+from collections import Counter
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -54,6 +56,9 @@ BRIDGE_DIR = PROJECT_ROOT / "bridge"
 PIPELINE_DIR = PROJECT_ROOT / "pipeline"
 
 RATE_PER_HOUR = 1.99
+
+# Audio file extensions recognized by the scanner
+AUDIO_EXTENSIONS = {".wav", ".mp3", ".flac", ".aiff", ".ogg", ".aac", ".wma", ".m4a"}
 
 # ─── UI Visuals ────────────────────────────────────────────
 BANNER = """
@@ -414,45 +419,307 @@ def cmd_gpu(args):
     console.print(Align.center(BANNER))
     hub.exec_remote("rocm-smi", capture=False)
 
+# ─── Adaptive Onboarding System ────────────────────────────
+
+def _format_size(size_bytes: int) -> str:
+    """Format bytes into human-readable string."""
+    if size_bytes == 0:
+        return "0 B"
+    units = ["B", "KB", "MB", "GB", "TB"]
+    i = int(math.floor(math.log(size_bytes, 1024)))
+    p = math.pow(1024, i)
+    s = round(size_bytes / p, 1)
+    return f"{s} {units[i]}"
+
+
+def scan_input_folder(input_path: str) -> list:
+    """Scan a local folder recursively for audio files.
+    
+    Returns a list of dicts with: path, name, format, size_bytes, valid, warning
+    The system adapts to whatever the user has — 1 song or 1000.
+    """
+    tracks = []
+    root = Path(input_path)
+    
+    if not root.exists():
+        console.print(f"[bold red]❌ Ruta no encontrada: {input_path}[/bold red]")
+        return tracks
+    
+    # If it's a single file, just process that one
+    if root.is_file():
+        ext = root.suffix.lower()
+        if ext in AUDIO_EXTENSIONS:
+            size = root.stat().st_size
+            tracks.append({
+                "path": str(root),
+                "name": root.name,
+                "format": ext.upper().lstrip("."),
+                "size_bytes": size,
+                "valid": size > 0,
+                "warning": "Archivo vacío (0 bytes)" if size == 0 else None
+            })
+        return tracks
+    
+    # Recursive scan of directory
+    for f in sorted(root.rglob("*")):
+        if f.is_file() and f.suffix.lower() in AUDIO_EXTENSIONS:
+            try:
+                size = f.stat().st_size
+                warning = None
+                valid = True
+                
+                if size == 0:
+                    warning = "Archivo vacío (0 bytes)"
+                    valid = False
+                elif size < 1024:  # Less than 1KB is suspicious
+                    warning = "Archivo sospechosamente pequeño"
+                    valid = False
+                
+                tracks.append({
+                    "path": str(f),
+                    "name": f.name,
+                    "format": f.suffix.upper().lstrip("."),
+                    "size_bytes": size,
+                    "valid": valid,
+                    "warning": warning
+                })
+            except OSError as e:
+                tracks.append({
+                    "path": str(f),
+                    "name": f.name,
+                    "format": f.suffix.upper().lstrip("."),
+                    "size_bytes": 0,
+                    "valid": False,
+                    "warning": f"No se pudo leer: {e}"
+                })
+    
+    return tracks
+
+
+def display_track_summary(tracks: list, auto_yes: bool = False) -> bool:
+    """Display an adaptive summary based on how many tracks were found.
+    
+    - 0 tracks: Error message
+    - 1-10: Full table with every track
+    - 11-50: Truncated table (first 5 + last 5)
+    - 51+: Statistical summary with cost estimate
+    
+    Returns True if user confirms processing.
+    """
+    count = len(tracks)
+    
+    if count == 0:
+        console.print(Panel(
+            "[bold red]⚠ No se encontraron archivos de audio[/bold red]\n\n"
+            "Formatos soportados: WAV, MP3, FLAC, AIFF, OGG, AAC, WMA, M4A\n"
+            "Verifica que la ruta contenga archivos de audio válidos.",
+            border_style="red", title="Sin Canciones"
+        ))
+        return False
+    
+    total_size = sum(t["size_bytes"] for t in tracks)
+    valid_count = sum(1 for t in tracks if t["valid"])
+    warning_count = count - valid_count
+    format_counts = Counter(t["format"] for t in tracks)
+    
+    # ── Caso 1-10: Tabla completa ──────────────────────────
+    if count <= 10:
+        table = Table(
+            title=f"🎵 {count} Canción{'es' if count > 1 else ''} Detectada{'s' if count > 1 else ''}",
+            box=box.ROUNDED,
+            show_lines=True
+        )
+        table.add_column("#", style="dim", justify="right", width=4)
+        table.add_column("Nombre", style="cyan", max_width=45)
+        table.add_column("Formato", style="magenta", justify="center")
+        table.add_column("Tamaño", style="white", justify="right")
+        table.add_column("Estado", justify="center")
+        
+        for i, t in enumerate(tracks, 1):
+            status = "[green]✓ Válido[/green]" if t["valid"] else f"[yellow]⚠ {t['warning']}[/yellow]"
+            table.add_row(
+                str(i),
+                t["name"],
+                t["format"],
+                _format_size(t["size_bytes"]),
+                status
+            )
+        
+        console.print(table)
+    
+    # ── Caso 11-50: Tabla truncada ─────────────────────────
+    elif count <= 50:
+        table = Table(
+            title=f"🎵 {count} Canciones Detectadas",
+            box=box.ROUNDED,
+            show_lines=True
+        )
+        table.add_column("#", style="dim", justify="right", width=4)
+        table.add_column("Nombre", style="cyan", max_width=45)
+        table.add_column("Formato", style="magenta", justify="center")
+        table.add_column("Tamaño", style="white", justify="right")
+        table.add_column("Estado", justify="center")
+        
+        # First 5
+        for i, t in enumerate(tracks[:5], 1):
+            status = "[green]✓[/green]" if t["valid"] else f"[yellow]⚠[/yellow]"
+            table.add_row(str(i), t["name"], t["format"], _format_size(t["size_bytes"]), status)
+        
+        # Ellipsis row
+        hidden = count - 10
+        table.add_row("...", f"[dim]... y {hidden} canciones más ...[/dim]", "", "", "")
+        
+        # Last 5
+        for i, t in enumerate(tracks[-5:], count - 4):
+            status = "[green]✓[/green]" if t["valid"] else f"[yellow]⚠[/yellow]"
+            table.add_row(str(i), t["name"], t["format"], _format_size(t["size_bytes"]), status)
+        
+        console.print(table)
+    
+    # ── Caso 51+: Resumen estadístico ──────────────────────
+    else:
+        # Estimate processing time: ~1 min per track (conservative)
+        est_hours = count / 60.0
+        est_cost = est_hours * RATE_PER_HOUR
+        
+        format_str = ", ".join(f"{fmt} ({cnt})" for fmt, cnt in format_counts.most_common())
+        
+        summary_lines = [
+            f"[bold cyan]📊 Resumen del Lote[/bold cyan]",
+            f"{'─' * 35}",
+            f"[white]Canciones:[/white]  [bold]{count}[/bold]",
+            f"[white]Formatos:[/white]   {format_str}",
+            f"[white]Tamaño total:[/white] [bold]{_format_size(total_size)}[/bold]",
+            f"",
+            f"[white]⏱ Tiempo estimado:[/white] [bold yellow]~{est_hours:.1f} horas[/bold yellow]",
+            f"[white]💰 Costo estimado:[/white] [bold yellow]${est_cost:.2f} USD[/bold yellow]",
+        ]
+        
+        if warning_count > 0:
+            summary_lines.append(f"")
+            summary_lines.append(f"[yellow]⚠ {warning_count} archivo{'s' if warning_count > 1 else ''} con advertencias[/yellow]")
+        
+        console.print(Panel(
+            "\n".join(summary_lines),
+            title=f"🎵 Lote Detectado: {count} Canciones",
+            border_style="cyan"
+        ))
+    
+    # ── Footer común ───────────────────────────────────────
+    if count <= 50:
+        console.print(f"  [dim]Total: {count} canción{'es' if count > 1 else ''} | {_format_size(total_size)}[/dim]")
+        if warning_count > 0:
+            console.print(f"  [yellow]⚠ {warning_count} archivo{'s' if warning_count > 1 else ''} con advertencias (se omitirán)[/yellow]")
+    
+    # ── Confirmación ───────────────────────────────────────
+    if auto_yes:
+        console.print(f"[dim]  (--yes activo, procesando automáticamente)[/dim]")
+        return True
+    
+    prompt_text = f"¿Procesar {'esta canción' if count == 1 else f'estas {valid_count} canciones'}?"
+    return Confirm.ask(prompt_text)
+
+
+def upload_with_progress(tracks: list) -> dict:
+    """Upload valid audio files one by one with a progress bar.
+    
+    Returns stats dict: {success: int, failed: int, skipped: int, total: int}
+    """
+    valid_tracks = [t for t in tracks if t["valid"]]
+    stats = {"success": 0, "failed": 0, "skipped": len(tracks) - len(valid_tracks), "total": len(tracks)}
+    
+    if not valid_tracks:
+        console.print("[bold red]No hay archivos válidos para subir.[/bold red]")
+        return stats
+    
+    # Ensure remote input dir exists
+    hub.exec_remote("rm -rf /data/input_dynamic && mkdir -p /data/input_dynamic", capture=True,
+                    status_msg="Preparando directorio remoto")
+    
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(bar_width=40),
+        METER_COLUMN,
+        TimeElapsedColumn(),
+        console=console
+    ) as progress:
+        task = progress.add_task(
+            f"[cyan]Subiendo {len(valid_tracks)} canciones...",
+            total=len(valid_tracks)
+        )
+        
+        for i, t in enumerate(valid_tracks, 1):
+            progress.update(task, description=f"[cyan]Subiendo {i}/{len(valid_tracks)}: {t['name']}")
+            
+            if scp_upload(t["path"], "/data/input_dynamic/"):
+                stats["success"] += 1
+            else:
+                stats["failed"] += 1
+                console.print(f"  [red]❌ Falló: {t['name']}[/red]")
+            
+            progress.advance(task)
+    
+    # Upload summary
+    summary_table = Table(title="📤 Resumen de Upload", box=box.ROUNDED)
+    summary_table.add_column("Estado", style="white")
+    summary_table.add_column("Cantidad", justify="right")
+    
+    summary_table.add_row("[green]✅ Subidos exitosamente[/green]", f"[bold green]{stats['success']}[/bold green]")
+    if stats["failed"] > 0:
+        summary_table.add_row("[red]❌ Fallidos[/red]", f"[bold red]{stats['failed']}[/bold red]")
+    if stats["skipped"] > 0:
+        summary_table.add_row("[yellow]⚠ Omitidos (inválidos)[/yellow]", f"[yellow]{stats['skipped']}[/yellow]")
+    
+    console.print(summary_table)
+    
+    return stats
+
+
+# ─── Run Command (Adaptive Onboarding) ────────────────────
+
 def cmd_run(args):
-    """Run the audio restoration pipeline with dynamic path and purge support."""
+    """Run the audio restoration pipeline with adaptive onboarding.
+    
+    The CLI adapts to the user's input:
+    - Scans the input folder for audio files
+    - Shows a summary adapted to the volume (1, 10, or 1000 songs)
+    - Uploads with per-file progress
+    - Launches the restoration swarm
+    """
     console.print(Align.center(BANNER))
     
     input_path = getattr(args, "input", "/data/input")
+    auto_yes = getattr(args, "yes", False)
+    track_count_label = None  # Will be set if adaptive onboarding runs
     
-    # Check if input_path is a Windows path. If so, we need to upload it first.
+    # Check if input_path is a Windows path. If so, run the adaptive onboarding.
     if ":" in input_path or "\\" in input_path:
-        console.print(f"[yellow]Detected local Windows path:[/] {input_path}")
-        auto_yes = getattr(args, "yes", False)
-        if auto_yes or Confirm.ask("Do you want to upload these files to the server first?"):
-            # Ensure remote input dir exists
-            hub.exec_remote("rm -rf /data/input_dynamic && mkdir -p /data/input_dynamic", capture=True)
-            
-            # If it's a directory, we want its CONTENTS
-            upload_src = input_path
-            success = False
-            if os.path.isdir(input_path):
-                # Using a trailing slash for scp or using /* is tricky in Windows.
-                # The safest way is to upload the dir and then move contents if needed, 
-                # or just mount the sub-directory.
-                success = scp_upload(upload_src, "/data/input_dynamic/")
-                
-                # Check if it created a sub-dir
-                dirname = os.path.basename(input_path.rstrip("/\\"))
-                input_path = f"/data/input_dynamic/{dirname}"
-            else:
-                success = scp_upload(upload_src, "/data/input_dynamic/")
-                input_path = "/data/input_dynamic"
-            
-            if not success:
-                console.print("[bold red]Error: Failed to upload input files to server.[/bold red]")
-                return
-        else:
-            console.print("[red]Error: Cannot mount a local Windows path directly to a remote Linux Docker container.[/red]")
+        # Phase 1: Scan with gaming-style loading UI
+        with console.status(f"[bold cyan]👾 Analizando radar local:[/bold cyan] Escaneando {input_path} en busca de pistas de audio...", spinner="bouncingBar"):
+            tracks = scan_input_folder(input_path)
+        
+        
+        # Phase 2: Display adaptive summary & confirm
+        if not display_track_summary(tracks, auto_yes=auto_yes):
+            console.print("[dim]Operación cancelada.[/dim]")
             return
-
+        
+        # Phase 3: Upload with progress
+        console.print("\n[bold magenta]📡 Transfiriendo al MI300X...[/bold magenta]")
+        upload_stats = upload_with_progress(tracks)
+        
+        if upload_stats["success"] == 0:
+            console.print("[bold red]Error: No se pudo subir ningún archivo.[/bold red]")
+            return
+        
+        track_count_label = f"{upload_stats['success']} tracks"
+        # Set the remote path for the pipeline
+        input_path = "/data/input_dynamic"
+    
     do_purge = " --purge" if getattr(args, "purge", False) else ""
     do_overwrite = " --overwrite" if getattr(args, "overwrite", False) else ""
+    status_label = track_count_label or f"Input: {input_path}"
     
     try:
         hub.exec_remote(
@@ -466,7 +733,7 @@ def cmd_run(args):
             f"-e HSA_OVERRIDE_GFX_VERSION=9.4.2 "
             f"--network host "
             f"aars-pipeline python3 main.py --input /data/input{do_purge}{do_overwrite}",
-            status_msg=f"Starting Audio Restoration Swarm (Input: {input_path})"
+            status_msg=f"Starting Audio Restoration Swarm ({status_label})"
         )
         console.print(Panel("[bold green]PIPELINE COMPLETE[/bold green]", border_style="green"))
         
@@ -518,10 +785,11 @@ def _cmd_telemetry(args):
     console.print(Align.center(BANNER))
     hub.log_phase(1, "AARS Global Status")
     
-    # Remote files
-    remote_input = hub.exec_remote("ls /data/input/ 2>/dev/null", capture=True)
-    remote_output = hub.exec_remote("ls /data/output/ 2>/dev/null", capture=True)
-    remote_reports = hub.exec_remote("ls /data/reports/ 2>/dev/null", capture=True)
+    # Remote files with loading UI
+    with console.status("[bold magenta]📡 Sincronizando telemetría del enjambre...[/bold magenta]", spinner="bouncingBar"):
+        remote_input = hub.exec_remote("ls /data/input/ 2>/dev/null", capture=True)
+        remote_output = hub.exec_remote("ls /data/output/ 2>/dev/null", capture=True)
+        remote_reports = hub.exec_remote("ls /data/reports/ 2>/dev/null", capture=True)
     
     # Local files
     local_output = list((PROJECT_ROOT / "output").glob("*"))
@@ -565,7 +833,8 @@ def cmd_download(args):
     hub.log_phase(1, f"Syncing results to {local_out}")
     
     try:
-        result = hub.exec_remote("ls --color=never /data/output/ 2>/dev/null", capture=True)
+        with console.status("[bold cyan]👾 Explorando servidor base:[/bold cyan] Buscando transmisiones restauradas...", spinner="bouncingBar"):
+            result = hub.exec_remote("ls --color=never /data/output/ 2>/dev/null", capture=True)
     except Exception as e:
         console.print(f"[red]Error listing remote files: {e}[/red]")
         return

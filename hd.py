@@ -14,6 +14,10 @@ import time
 import threading
 import queue
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Load .env from project root
+load_dotenv(Path(__file__).parent / ".env")
 
 # Force UTF-8 for Windows console
 if sys.platform == "win32":
@@ -36,9 +40,9 @@ except ImportError:
 console = Console()
 
 # ─── Configuration ─────────────────────────────────────────
-SERVER_IP = "129.212.179.98"
+SERVER_IP = os.getenv("DROPLET_IP", "0.0.0.0")
 SERVER_USER = "root"
-SSH_KEY = os.path.expanduser("~/.ssh/id_gpu_droplet")
+SSH_KEY = os.path.expanduser(os.getenv("SSH_KEY_PATH", "~/.ssh/id_gpu_droplet"))
 
 SSH_OPTS = "-o StrictHostKeyChecking=no -o ConnectTimeout=60 -o ConnectionAttempts=5"
 SSH_BASE = f'ssh {SSH_OPTS} -i "{SSH_KEY}" {SERVER_USER}@{SERVER_IP}'

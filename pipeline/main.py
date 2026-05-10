@@ -14,16 +14,12 @@ Flow:
 import os
 import json
 import re
+import argparse
+import shutil
 from pathlib import Path
 from analysis.spectral import SpectralAnalyzer
 from crew import AURACrew
 from memory import SwarmMemory
-
-# Paths within the container
-INPUT_DIR = Path("/data/input")
-OUTPUT_DIR = Path("/data/output")
-REPORT_DIR = Path("/data/reports")
-INTERMEDIATE_DIR = Path("/data/intermediate")
 
 from rich.console import Console
 from rich.panel import Panel
@@ -33,6 +29,42 @@ from rich.table import Table
 console = Console()
 
 MAX_RETRIES = 2  # Maximum retry attempts if QC fails
+
+# Global path placeholders (will be updated in main)
+INPUT_DIR = Path("/data/input")
+OUTPUT_DIR = Path("/data/output")
+REPORT_DIR = Path("/data/reports")
+INTERMEDIATE_DIR = Path("/data/intermediate")
+
+def purge_environment(paths_to_clean: list):
+    """Purge temporary files and clear memory to ensure a fresh state."""
+    console.print("[bold red]🧹 Purging system for a fresh start...[/bold red]")
+    
+    for path in paths_to_clean:
+        if path.exists() and path.is_dir():
+            # Clean directory contents without deleting the directory itself
+            for item in path.iterdir():
+                try:
+                    if item.is_file() or item.is_symlink():
+                        item.unlink()
+                    elif item.is_dir():
+                        shutil.rmtree(item)
+                except Exception as e:
+                    console.print(f"  [yellow]Warning: Could not remove {item}: {e}[/yellow]")
+            console.print(f"  [dim]Cleaned: {path}[/dim]")
+    
+    # Memory purge
+    import gc
+    try:
+        import torch
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.ipc_collect()
+    except ImportError:
+        gc.collect()
+    
+    console.print("  [dim]Memory & GPU Cache cleared.[/dim]")
 
 
 def extract_qc_verdict(crew_output: str) -> dict:
@@ -244,17 +276,39 @@ def process_track(track_path: Path, memory: SwarmMemory, attempt: int = 1):
 
 
 def main():
+    global INPUT_DIR, OUTPUT_DIR, REPORT_DIR, INTERMEDIATE_DIR
+
+    parser = argparse.ArgumentParser(description="AARS Orchestrator")
+    parser.add_argument("--input", type=str, default="/data/input", help="Path to input audio files")
+    parser.add_argument("--output", type=str, default="/data/output", help="Path to save processed files")
+    parser.add_argument("--reports", type=str, default="/data/reports", help="Path to save processing reports")
+    parser.add_argument("--intermediate", type=str, default="/data/intermediate", help="Path for temporary files")
+    parser.add_argument("--purge", action="store_true", help="Purge system before each track for a fresh start")
+    parser.add_argument("--overwrite", action="store_true", help="Overwrite existing output files and reports")
+    args = parser.parse_args()
+
+
+    INPUT_DIR = Path(args.input)
+    OUTPUT_DIR = Path(args.output)
+    REPORT_DIR = Path(args.reports)
+    INTERMEDIATE_DIR = Path(args.intermediate)
+
     # Ensure directories exist
     for d in [INPUT_DIR, OUTPUT_DIR, REPORT_DIR, INTERMEDIATE_DIR]:
         d.mkdir(parents=True, exist_ok=True)
 
     # Initialize persistent memory
     memory = SwarmMemory()
+
+    # Initial purge if requested
+    if args.purge:
+        purge_environment([INTERMEDIATE_DIR, OUTPUT_DIR, REPORT_DIR])
     
     console.print(Panel(
         f"[bold cyan]Swarm Memory Status[/bold cyan]\n"
         f"Past Runs: {memory.get_total_runs()}\n"
-        f"Success Rate: {memory.get_success_rate()*100:.0f}%",
+        f"Success Rate: {memory.get_success_rate()*100:.0f}%\n"
+        f"Input Dir: {INPUT_DIR}",
         border_style="cyan", title="🧠 Memory"
     ))
 
@@ -264,7 +318,7 @@ def main():
     tracks = sorted(tracks)
 
     if not tracks:
-        console.print("[yellow]📭 No tracks found in /data/input. Awaiting bridge...[/yellow]")
+        console.print(f"[yellow]📭 No tracks found in {INPUT_DIR}. Awaiting bridge...[/yellow]")
         return
 
     # Summary table
@@ -275,18 +329,25 @@ def main():
     for track in tracks:
         report_file = REPORT_DIR / f"{track.stem}_report.json"
         output_exists = any(OUTPUT_DIR.glob(f"{track.stem}*"))
-        if report_file.exists() and output_exists:
+        if report_file.exists() and output_exists and not args.overwrite:
             table.add_row(track.name, "[green]✓ Already processed[/green]")
         else:
-            table.add_row(track.name, "[yellow]⏳ Queued[/yellow]")
+            status = "[yellow]⏳ Queued[/yellow]"
+            if report_file.exists() and output_exists and args.overwrite:
+                status = "[orange3]⏳ Queued (OVERWRITE)[/orange3]"
+            table.add_row(track.name, status)
     
     console.print(table)
 
     # Process each track
     for track in tracks:
+        # Purge if requested
+        if args.purge:
+            purge_environment([INTERMEDIATE_DIR])
+
         report_file = REPORT_DIR / f"{track.stem}_report.json"
         output_exists = any(OUTPUT_DIR.glob(f"{track.stem}*"))
-        if report_file.exists() and output_exists:
+        if report_file.exists() and output_exists and not args.overwrite:
             console.print(f"[dim]⏩ Skipping {track.name} (Already processed & output found).[/dim]")
             continue
 

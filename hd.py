@@ -191,7 +191,9 @@ class AARSHub:
             # 2.1 Upload scripts (Single connection)
             progress.update(task2, description="[magenta]Preparing remote environment...")
             self.exec_remote("mkdir -p /tmp/aars", capture=True, status_msg="Creating /tmp/aars")
-            scp_upload(str(INFRA_DIR), "/tmp/aars/")
+            if not scp_upload(str(INFRA_DIR), "/tmp/aars/"):
+                console.print("[bold red]Critical Error: Failed to upload infrastructure scripts.[/bold red]")
+                sys.exit(1)
             progress.advance(task2)
             
             # 2.2 Run Setup
@@ -277,7 +279,9 @@ class AARSHub:
     def ignite_phase_4(self):
         """Phase 4: Build Restoration Container"""
         self.exec_remote("mkdir -p /opt/aars/pipeline", capture=True, status_msg="Preparing pipeline workspace")
-        scp_upload(str(PIPELINE_DIR), "/opt/aars/")
+        if not scp_upload(str(PIPELINE_DIR), "/opt/aars/"):
+            console.print("[bold red]Critical Error: Failed to upload pipeline source.[/bold red]")
+            sys.exit(1)
         self.exec_remote("docker build -t aars-pipeline /opt/aars/pipeline/", 
                          status_msg="Building Pipeline Container (this takes a moment)")
 
@@ -315,10 +319,12 @@ def cmd_status(args):
     # Also show the telemetry dashboard
     _cmd_telemetry(args)
 
-def scp_upload(local: str, remote: str) -> int:
+def scp_upload(local: str, remote: str) -> bool:
+    """Uploads a file or directory via SCP and returns True if successful."""
     cmd = f'{SCP_BASE} -r "{local}" {SERVER_USER}@{SERVER_IP}:"{remote}"'
     with console.status(f"[magenta]Transferring {Path(local).name}...[/magenta]", spinner="bouncingBar"):
-        return subprocess.call(cmd, shell=True, stdout=subprocess.DEVNULL)
+        result = subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+        return result.returncode == 0
 
 # ─── Additional Commands ───────────────────────────────────
 
@@ -368,18 +374,58 @@ def cmd_gpu(args):
     hub.exec_remote("rocm-smi", capture=False)
 
 def cmd_run(args):
-    """Run the audio restoration pipeline."""
+    """Run the audio restoration pipeline with dynamic path and purge support."""
     console.print(Align.center(BANNER))
+    
+    input_path = getattr(args, "input", "/data/input")
+    
+    # Check if input_path is a Windows path. If so, we need to upload it first.
+    if ":" in input_path or "\\" in input_path:
+        console.print(f"[yellow]Detected local Windows path:[/] {input_path}")
+        auto_yes = getattr(args, "yes", False)
+        if auto_yes or Confirm.ask("Do you want to upload these files to the server first?"):
+            # Ensure remote input dir exists
+            hub.exec_remote("rm -rf /data/input_dynamic && mkdir -p /data/input_dynamic", capture=True)
+            
+            # If it's a directory, we want its CONTENTS
+            upload_src = input_path
+            success = False
+            if os.path.isdir(input_path):
+                # Using a trailing slash for scp or using /* is tricky in Windows.
+                # The safest way is to upload the dir and then move contents if needed, 
+                # or just mount the sub-directory.
+                success = scp_upload(upload_src, "/data/input_dynamic/")
+                
+                # Check if it created a sub-dir
+                dirname = os.path.basename(input_path.rstrip("/\\"))
+                input_path = f"/data/input_dynamic/{dirname}"
+            else:
+                success = scp_upload(upload_src, "/data/input_dynamic/")
+                input_path = "/data/input_dynamic"
+            
+            if not success:
+                console.print("[bold red]Error: Failed to upload input files to server.[/bold red]")
+                return
+        else:
+            console.print("[red]Error: Cannot mount a local Windows path directly to a remote Linux Docker container.[/red]")
+            return
+
+    do_purge = " --purge" if getattr(args, "purge", False) else ""
+    do_overwrite = " --overwrite" if getattr(args, "overwrite", False) else ""
+    
     try:
         hub.exec_remote(
-            "docker run --rm --device /dev/kfd --device /dev/dri --group-add video "
-            "-v /data:/data "
-            "-e VLLM_BASE_URL=http://127.0.0.1:8000/v1 "
-            "-e VLLM_AUDIO_URL=http://127.0.0.1:8001/v1 "
-            "-e HSA_OVERRIDE_GFX_VERSION=9.4.2 "
-            "--network host "
-            "aars-pipeline",
-            status_msg="Starting Audio Restoration Swarm"
+            f"docker run --rm --device /dev/kfd --device /dev/dri --group-add video "
+            f"-v {input_path}:/data/input "
+            f"-v /data/output:/data/output "
+            f"-v /data/reports:/data/reports "
+            f"-v /data/intermediate:/data/intermediate "
+            f"-e VLLM_BASE_URL=http://127.0.0.1:8000/v1 "
+            f"-e VLLM_AUDIO_URL=http://127.0.0.1:8001/v1 "
+            f"-e HSA_OVERRIDE_GFX_VERSION=9.4.2 "
+            f"--network host "
+            f"aars-pipeline python3 main.py --input /data/input{do_purge}{do_overwrite}",
+            status_msg=f"Starting Audio Restoration Swarm (Input: {input_path})"
         )
         console.print(Panel("[bold green]PIPELINE COMPLETE[/bold green]", border_style="green"))
         
@@ -392,18 +438,39 @@ def cmd_run(args):
     except subprocess.CalledProcessError as e:
         console.print(f"[red]Pipeline failed: {e}[/red]")
 
+def cmd_process(args):
+    """Shortcut for dynamic processing with purge and overwrite (Recommended)."""
+    args.purge = True
+    args.overwrite = True
+    cmd_run(args)
+
 def cmd_upload(args):
-    """Upload files to server."""
+    """Upload files to server with verification."""
     console.print(Align.center(BANNER))
+    success_count = 0
+    fail_count = 0
+    
     for f in args.files:
         if not os.path.exists(f):
             console.print(f"[red]Not found: {f}[/red]")
+            fail_count += 1
             continue
+            
         fname = os.path.basename(f)
         console.print(f"[dim]Uploading {fname}...[/dim]")
-        scp_upload(f, f"/data/input/{fname}")
-        md5 = hashlib.md5(open(f, "rb").read()).hexdigest()
-        console.print(f"[green]✅ {fname} (MD5: {md5[:12]}...)[/green]")
+        
+        if scp_upload(f, f"/data/input/{fname}"):
+            md5 = hashlib.md5(open(f, "rb").read()).hexdigest()
+            console.print(f"[green]✅ {fname} uploaded (MD5: {md5[:12]}...)[/green]")
+            success_count += 1
+        else:
+            console.print(f"[red]❌ Failed to upload {fname}[/red]")
+            fail_count += 1
+            
+    if fail_count == 0:
+        console.print(f"\n[bold green]✅ All {success_count} files uploaded successfully.[/bold green]")
+    else:
+        console.print(f"\n[bold yellow]⚠ Upload finished with errors: {success_count} success, {fail_count} failed.[/bold yellow]")
 
 def _cmd_telemetry(args):
     """Show a dashboard of processed vs local files."""
@@ -449,39 +516,88 @@ def _cmd_telemetry(args):
     console.print(f"\n[dim]Total Local Files: {len(local_output)} | Reports: {len(remote_reports.split())}[/dim]")
 
 def cmd_download(args):
-    """Download completed files from server."""
+    """Download completed files from server with error checking and race condition handling."""
     console.print(Align.center(BANNER))
     local_out = args.dest or str(PROJECT_ROOT / "output")
     os.makedirs(local_out, exist_ok=True)
     
     hub.log_phase(1, f"Syncing results to {local_out}")
     
-    result = hub.exec_remote("ls /data/output/ 2>/dev/null", capture=True)
+    try:
+        result = hub.exec_remote("ls /data/output/ 2>/dev/null", capture=True)
+    except Exception as e:
+        console.print(f"[red]Error listing remote files: {e}[/red]")
+        return
+
     if not result:
         console.print("[yellow]No completed files found on server.[/yellow]")
         return
         
     files = [f.strip() for f in result.split("\n") if f.strip()]
     
+    stats = {"success": 0, "failed": 0, "skipped": 0, "missing": 0}
+    failed_details = []
+
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
         BarColumn(),
+        METER_COLUMN,
         console=console
     ) as progress:
         task = progress.add_task("[cyan]Downloading tracks...", total=len(files))
         for f in files:
+            local_path = os.path.join(local_out, f)
             progress.update(task, description=f"Fetching {f}...")
-            # Check if file exists locally to avoid re-downloading large files
-            if os.path.exists(os.path.join(local_out, f)):
+            
+            # Check if file exists locally to avoid re-downloading
+            if os.path.exists(local_path):
+                 stats["skipped"] += 1
                  progress.advance(task)
                  continue
                  
-            cmd = f'{SCP_BASE} -q -r {SERVER_USER}@{SERVER_IP}:"/data/output/{f}" "{os.path.join(local_out, f)}"'
-            subprocess.call(cmd, shell=True)
+            cmd = f'{SCP_BASE} -q -r {SERVER_USER}@{SERVER_IP}:"/data/output/{f}" "{local_path}"'
+            # Use subprocess.run to capture result
+            scp_res = subprocess.run(cmd, shell=True, stderr=subprocess.PIPE)
+            
+            if scp_res.returncode == 0:
+                stats["success"] += 1
+            else:
+                # Handle disappearance (Race condition with bridge)
+                try:
+                    # Check if it still exists on remote
+                    hub.exec_remote(f"ls /data/output/{f}", capture=True)
+                    # If it exists but SCP failed, it's a real download error
+                    stats["failed"] += 1
+                    failed_details.append(f"{f} (SCP error)")
+                except subprocess.CalledProcessError:
+                    # File is gone from server!
+                    stats["missing"] += 1
+                    failed_details.append(f"{f} (Disappeared - likely moved by bridge)")
+            
             progress.advance(task)
             
-    console.print(f"\n[bold green]✅ Sync Complete![/bold green] Check your local '{Path(local_out).name}' folder.")
+    # Final Summary Report
+    summary = Table(title="Sync Results", box=box.ROUNDED)
+    summary.add_column("Category", style="cyan")
+    summary.add_column("Count", justify="right")
+    
+    summary.add_row("Successfully Downloaded", f"[green]{stats['success']}[/]")
+    if stats["skipped"]: summary.add_row("Already Local (Skipped)", f"[blue]{stats['skipped']}[/]")
+    if stats["missing"]: summary.add_row("Missing from Server", f"[yellow]{stats['missing']}[/]")
+    if stats["failed"]:  summary.add_row("Download Failed", f"[bold red]{stats['failed']}[/]")
+    
+    console.print(summary)
+    
+    if stats["failed"] == 0:
+        if stats["missing"] > 0:
+            console.print(f"\n[bold yellow]⚠ Sync Complete (with caveats).[/bold yellow] Some files were missing from the server, probably already handled by the AARS Bridge.")
+        else:
+            console.print(f"\n[bold green]✅ Sync Complete![/bold green] All files synced successfully.")
+    else:
+        console.print(f"\n[bold red]❌ Sync Failed for {stats['failed']} files.[/bold red]")
+        for detail in failed_details:
+            console.print(f"  [red]↳[/] {detail}")
 
 def cmd_purge(args):
     """Kill ALL containers on the server."""
@@ -492,35 +608,47 @@ def cmd_purge(args):
 # ─── CLI Router ────────────────────────────────────────────
 
 def main():
+    # Parent parser for shared arguments
+    parent_parser = argparse.ArgumentParser(add_help=False)
+    parent_parser.add_argument("--yes", "-y", action="store_true", help="Auto-confirm all prompts")
+
     parser = argparse.ArgumentParser(
         prog="hd.py",
         description="AARS Headquarters — Autonomous Audio Restoration Swarm"
     )
     sub = parser.add_subparsers(dest="command")
 
-    sub.add_parser("ignite",   help="🔥 System deployment")
-    sub.add_parser("build",    help="🔨 Rebuild restoration container")
-    sub.add_parser("run",      help="▶  Execute restoration")
-    sub.add_parser("status",   help="📊 Mission telemetry & local sync status")
-    sub.add_parser("clean",    help="🧹 Clear server reports/output")
-    sub.add_parser("gpu",      help="🏎️  GPU status (rocm-smi)")
-    sub.add_parser("purge",    help="🧹 Kill ALL containers")
-    sub.add_parser("stop",     help="⏹️  Stop all containers gracefully")
-    sub.add_parser("cost",     help="💰 Session cost estimate")
-    sub.add_parser("shell",    help="🖥️  Interactive SSH")
+    sub.add_parser("ignite",   parents=[parent_parser], help="🔥 System deployment")
+    sub.add_parser("build",    parents=[parent_parser], help="🔨 Rebuild restoration container")
+    
+    p_run = sub.add_parser("run", parents=[parent_parser], help="▶  Execute restoration")
+    p_run.add_argument("--input", default="C:\\Suno_Restoration\\Input", help="Path to process (e.g. C:\\Suno_Restoration\\Input or /mnt/scratch/my_songs)")
+    p_run.add_argument("--purge", action="store_true", help="Purge temporary files for a fresh start")
+    p_run.add_argument("--overwrite", action="store_true", help="Overwrite existing output files and reports")
 
-    p_log = sub.add_parser("logs", help="📜 Container logs")
+    p_proc = sub.add_parser("process", parents=[parent_parser], help="🔥 Fresh dynamic processing (Recommended)")
+    p_proc.add_argument("input", nargs="?", default="C:\\Suno_Restoration\\Input", help="Path to process")
+    
+    sub.add_parser("status",   parents=[parent_parser], help="📊 Mission telemetry & local sync status")
+    sub.add_parser("clean",    parents=[parent_parser], help="🧹 Clear server reports/output")
+    sub.add_parser("gpu",      parents=[parent_parser], help="🏎️  GPU status (rocm-smi)")
+    sub.add_parser("purge",    parents=[parent_parser], help="🧹 Kill ALL containers")
+    sub.add_parser("stop",     parents=[parent_parser], help="⏹️  Stop all containers gracefully")
+    sub.add_parser("cost",     parents=[parent_parser], help="💰 Session cost estimate")
+    sub.add_parser("shell",    parents=[parent_parser], help="🖥️  Interactive SSH")
+
+    p_log = sub.add_parser("logs", parents=[parent_parser], help="📜 Container logs")
     p_log.add_argument("--lines", type=int, default=50)
     p_log.add_argument("--pipeline", action="store_true", help="Show restoration pipeline logs")
 
-    p_up = sub.add_parser("upload", help="⬆️  Upload files to server")
+    p_up = sub.add_parser("upload", parents=[parent_parser], help="⬆️  Upload files to server")
     p_up.add_argument("files", nargs="+")
 
-    p_dl = sub.add_parser("fetch", help="⬇️  Download restored files (alias: download)")
+    p_dl = sub.add_parser("fetch", parents=[parent_parser], help="⬇️  Download restored files (alias: download)")
     p_dl.add_argument("--dest", default=None)
     
     # Also keep 'download' as an alias if needed, but fetch is better
-    sub.add_parser("download", help="⬇️  Download restored files")
+    sub.add_parser("download", parents=[parent_parser], help="⬇️  Download restored files")
 
     args = parser.parse_args()
 
@@ -528,6 +656,7 @@ def main():
         "ignite": cmd_ignite,
         "build": cmd_build,
         "run": cmd_run,
+        "process": cmd_process,
         "status": cmd_status,
         "clean": cmd_clean,
         "logs": cmd_logs,

@@ -55,7 +55,8 @@ services:
     volumes:
       - ./pipeline:/app/pipeline
       # High IOPS Workspace on 5TB NVMe Scratch Disk
-      - /mnt/scratch/aura_data:/data
+      # Defaults to /mnt/scratch/aura_data but can be overridden by user
+      - ${AURA_DATA_PATH:-/mnt/scratch/aura_data}:/data
     depends_on:
       - vllm-brain
     command: tail -f /dev/null # Keep alive for manual triggered runs, or replace with python pipeline/main.py

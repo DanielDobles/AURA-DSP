@@ -108,11 +108,20 @@ class SFTPBridge:
             return False
 
     def download(self, remote_file: str, local_dir: str) -> bool:
-        """Download a file from the server."""
+        """Download a file from the server and track it locally."""
         try:
             self.connect()
             filename = os.path.basename(remote_file)
             local_path = os.path.join(local_dir, filename)
+
+            # Avoid re-downloading if already synced
+            synced_list_path = Path(__file__).parent / "synced_files.txt"
+            synced_files = set()
+            if synced_list_path.exists():
+                synced_files = set(synced_list_path.read_text().splitlines())
+            
+            if filename in synced_files and os.path.exists(local_path):
+                return True
 
             log.info(f"Downloading: {remote_file} → {local_path}")
             self.sftp.get(remote_file, local_path)
@@ -124,8 +133,9 @@ class SFTPBridge:
 
             if local_md5 == remote_md5:
                 log.info(f"✅ Downloaded {filename} — verified")
-                # Remove from server output after successful download
-                self.sftp.remove(remote_file)
+                # Track as synced instead of removing from server
+                with open(synced_list_path, "a") as f:
+                    f.write(f"{filename}\n")
                 return True
             else:
                 log.error(f"❌ Download hash mismatch for {filename}")

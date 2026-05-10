@@ -1,13 +1,14 @@
 """
-AARS — Autonomous Crew (v3: Progressive Self-Improvement)
+AARS — Autonomous Crew (v3: Circular Collaborative Swarm)
 
-Architecture: 3-agent OODA loop
-  1. Strategist   — Reads spectral analysis + swarm memory → produces restoration plan
-  2. Surgeon      — Executes the plan using DSP tools → produces restored audio
-  3. QC Auditor   — Validates output quality → feeds results back to memory
+Architecture: 5-Agent Collaborative Circular Loop
+  1. Ingeniero de Sonido Jefe (Master SWE, DSP Expert) - Orchestrates and delegates.
+  2. Ingeniero de Sonido - Executes EQ, neural rebalance, max loudness.
+  3. Experto en Psicoacústica y Audiófilo - Enhances warmth, clarity, width.
+  4. Ingeniero Físico-Matemático - Applies strict mathematical DSP (upsampling, transients).
+  5. El Oyente - Final quality reviewer.
 
-Communication flow:
-  Spectral Data + Memory Briefing → Strategist → Surgeon → QC Auditor → Memory
+Communication flow: All agents communicate circularly via delegation, orchestrated by the Chief.
 """
 
 import os
@@ -23,10 +24,8 @@ from tools.surgeon_tools import (
     FFmpegProMasteringTool,
     QualityComparisonTool,
     TonalBalanceStabilizerTool,
-    NeuralMasterRebalanceTool,
-    SOTAMasteringChainTool
+    NeuralMasterRebalanceTool
 )
-
 
 # ── LLM Configuration ─────────────────────────────────────
 
@@ -39,9 +38,10 @@ llm_brain = LLM(
 
 
 class AURACrew:
-    """Builds and orchestrates the 3-agent restoration swarm."""
+    """Builds and orchestrates the 5-agent collaborative restoration swarm."""
 
     def __init__(self):
+        # Instantiate individual tools for specialized agents
         self._tools_upsampler = AudiophileUpsamplerTool()
         self._tools_transient = TransientPreservationTool()
         self._tools_exciter = HarmonicExciterTool()
@@ -50,141 +50,125 @@ class AURACrew:
         self._tools_maxi = MasterMaximizerTool()
         self._tools_master = FFmpegProMasteringTool()
         self._tools_qc = QualityComparisonTool()
-        self._tools_chain = SOTAMasteringChainTool()
+        self._tools_tonal = TonalBalanceStabilizerTool()
+        self._tools_neural = NeuralMasterRebalanceTool()
 
     def build_crew(self):
-        """Constructs the 3-agent crew with inter-task context flow."""
+        """Constructs the 5-agent circular collaborative crew."""
 
-        # ── Agent 1: Strategist ────────────────────────────
-        strategist = Agent(
-            role="Restoration Strategist",
+        # ── 1. Ingeniero de Sonido Jefe / Orchestrator ──
+        chief_engineer = Agent(
+            role="Ingeniero de Sonido Jefe y Experto en DSP",
             goal=(
-                "Analyze the spectral diagnosis and swarm memory briefing to determine "
-                "the optimal restoration plan. Output a PRECISE ordered list of tool calls."
+                "Orquestar el proceso circular de restauración de audio. Analizas el diagnóstico espectral "
+                "y coordinas al equipo delegando la ejecución de herramientas a los especialistas adecuados."
             ),
             backstory=(
-                "You are an elite DSP mastering engineer modeled after the core architecture of iZotope Ozone 11. "
-                "You read spectral diagnostics and historical swarm memory to decide which DSP tools to apply. "
-                "You use a SOTA 'Master Assistant' paradigm. "
-                "To achieve an industry-standard, commercial master (Consumer Mode), your pipeline must prioritize: "
-                "1. spectral_tonal_balance_stabilizer FIRST to fix muddy/harsh macroscopic frequency response. "
-                "2. neural_master_rebalance to perfectly isolate and widen the melody while keeping vocals pristine and mono-bassing the rhythm. "
-                "3. psychoacoustic_clarity_exciter for asymmetric tube-like saturation (warmth and bite). "
-                "4. transient_preservation_dsp for punch recovery via fast/slow envelope analysis. "
-                "5. dynamic_boost_maximizer for GPU Tensor soft-knee maximization to commercial LUFS. "
-                "Base your decisions on the spectral data provided: if cutoff_freq_hz < 16000, upsampling is mandatory."
+                "Eres un Ingeniero de Sonido Jefe con un máster en Ingeniería de Software y Experto en DSP. "
+                "Crees en un flujo de trabajo circular y no piramidal: todos los agentes se ayudan mutuamente según sus campos. "
+                "Tú orquestas al equipo (Ingeniero de Sonido, Experto en Psicoacústica, Físico-Matemático, y El Oyente). "
+                "Diseñas la cadena de herramientas basada en los datos espectrales y delegas cada paso al especialista correspondiente."
             ),
             llm=llm_brain,
             verbose=True,
-            allow_delegation=False,
-            max_iter=5
+            allow_delegation=True,
+            max_iter=20
         )
 
-        # ── Agent 2: Surgeon ───────────────────────────────
-        surgeon = Agent(
-            role="Master Audio Surgeon",
-            goal=(
-                "Execute ALL steps of the restoration plan sequentially by calling each DSP tool "
-                "one at a time in order. You MUST call each tool — never simulate or skip. "
-                "NEVER call quality_comparison_auditor — that tool belongs to a different agent."
-            ),
+        # ── 2. Ingeniero de Sonido ──
+        sound_engineer = Agent(
+            role="Ingeniero de Sonido",
+            goal="Ejecutar herramientas de mezcla y masterización clásicas.",
             backstory=(
-                "You are a deterministic execution engine. You receive a numbered restoration plan and "
-                "you execute EACH step by calling the correct tool with the exact paths specified. "
-                "After each tool call, parse the JSON response. If success=true, proceed to the next step "
-                "using the output_path as the next input_path. If success=false, STOP and report the error. "
-                "You must call ALL tools in the plan. Do NOT skip any step. Do NOT use quality_comparison_auditor. "
-                "Your job is ONLY to execute DSP tools in sequence and report their results."
+                "Eres un Ingeniero de Sonido profesional. Trabajas junto al equipo aplicando tus herramientas especializadas: "
+                "ecualización de balance tonal (spectral_tonal_balance_stabilizer), rebalanceo de stems neuronales (neural_master_rebalance), "
+                "y maximización final de volumen (dynamic_boost_maximizer, ffmpeg_pro_master)."
             ),
-            tools=[self._tools_chain],
+            tools=[self._tools_tonal, self._tools_neural, self._tools_maxi, self._tools_master],
             llm=llm_brain,
             verbose=True,
-            allow_delegation=False,
-            max_iter=15
+            allow_delegation=True
         )
 
-        # ── Agent 3: QC Auditor ────────────────────────────
-        qc_auditor = Agent(
-            role="Quality Control Auditor",
-            goal=(
-                "Compare the original audio with the final restored output using the "
-                "quality_comparison_auditor tool. Report the verdict with full metrics."
-            ),
+        # ── 3. Experto en Psicoacústica y Audiófilo ──
+        psychoacoustics_expert = Agent(
+            role="Experto en Psicoacústica y Audiófilo",
+            goal="Mejorar la percepción espacial, claridad armónica y calidez del audio.",
             backstory=(
-                "You are the final checkpoint. You use the quality_comparison_auditor tool "
-                "to measure if the restoration improved the audio. You MUST call the tool — "
-                "your judgment is based on its quantitative output, not opinion. "
-                "Pass the ORIGINAL input file as input_path and the FINAL restored file as output_path."
+                "Eres un Ingeniero de Sonido con máster en psicoacústica y experto audiófilo. "
+                "Te encargas de procesar el sonido para el oído humano, otorgando mayor claridad, calidez armónica y una imagen estéreo expansiva. "
+                "Utilizas excitadores psicoacústicos (psychoacoustic_clarity_exciter, harmonic_spectral_exciter) y expansores estéreo (stereo_spatial_widener)."
+            ),
+            tools=[self._tools_exciter, self._tools_psycho, self._tools_wide],
+            llm=llm_brain,
+            verbose=True,
+            allow_delegation=True
+        )
+
+        # ── 4. Ingeniero Físico-Matemático ──
+        physics_math_engineer = Agent(
+            role="Ingeniero de Sonido Físico-Matemático",
+            goal="Aplicar transformaciones matemáticas estrictas y físicas a nivel de muestra.",
+            backstory=(
+                "Eres un Ingeniero de Sonido con máster en Física y Matemáticas. "
+                "Tu trabajo es la precisión absoluta: interpolación matemática para upsampling evitando aliasing (soxr_vhq_upsampler) "
+                "y cálculo de envolventes de Hilbert para la preservación de transitorios (transient_preservation_dsp)."
+            ),
+            tools=[self._tools_upsampler, self._tools_transient],
+            llm=llm_brain,
+            verbose=True,
+            allow_delegation=True
+        )
+
+        # ── 5. El Oyente ──
+        listener_reviewer = Agent(
+            role="El Oyente y Revisor Final",
+            goal="Auditar el resultado final comparándolo con el original y comunicarse con el equipo para validar el éxito.",
+            backstory=(
+                "Eres 'El Oyente'. Tienes el oído final. Tu trabajo es ejecutar la herramienta de control de calidad (quality_comparison_auditor) "
+                "para medir cuantitativa y cualitativamente si el audio mejoró. Te comunicas con el equipo dando tu veredicto "
+                "y feedback detallado para saber si la restauración fue exitosa."
             ),
             tools=[self._tools_qc],
             llm=llm_brain,
             verbose=True,
-            allow_delegation=False,
-            max_iter=5
+            allow_delegation=True
         )
 
-        # ── Task 1: Strategic Analysis ─────────────────────
-        strategy_task = Task(
+        # ── Task: Circular Collaborative Restoration ──
+        collaboration_task = Task(
             description=(
-                "You are given:\n"
-                "- Filename: {filename}\n"
-                "- Audio path: {audio_path}\n"
-                "- Spectral diagnosis: {spectral_json}\n"
-                "- Swarm memory briefing: {memory_briefing}\n"
-                "- MISSION GOAL: {mission_goal}\n\n"
-                "Produce a restoration plan. For the step specify:\n"
-                "  - Tool name MUST BE: sota_mastering_chain\n"
-                "  - input_path and output_path\n"
-                "  - Expected improvement\n\n"
-                "Rules:\n"
-                "  1. Final output must be at /data/output/{filename}_restored.wav\n"
-                "  2. The QC step (quality_comparison_auditor) will be handled by the next agent"
+                "Inicia el proceso circular de restauración para el archivo: {audio_path} (Filename: {filename})\n"
+                "Diagnóstico Espectral: {spectral_json}\n"
+                "Memoria del Swarm: {memory_briefing}\n"
+                "Objetivo de la Misión: {mission_goal}\n\n"
+                "INSTRUCCIONES PARA EL INGENIERO JEFE (TÚ):\n"
+                "1. Analiza el diagnóstico espectral. Decide qué herramientas se necesitan.\n"
+                "2. DELEGA a tus compañeros (Ingeniero de Sonido, Experto en Psicoacústica, Ingeniero Físico-Matemático) "
+                "la ejecución secuencial de sus herramientas. Dales instrucciones claras sobre qué input_path usar "
+                "y pídeles que usen output_paths intermedios (ej. /data/intermediate/{filename}_paso1.wav).\n"
+                "3. Asegúrate de que el último experto en procesar el audio guarde el resultado final EXACTAMENTE en: "
+                "/data/output/{filename}_restored.wav\n"
+                "4. Una vez generado el archivo final, DELEGA a 'El Oyente y Revisor Final' para que ejecute el control de calidad "
+                "comparando el {audio_path} original con el /data/output/{filename}_restored.wav.\n"
+                "5. Devuelve el reporte JSON de 'El Oyente' como el resultado final de esta tarea."
             ),
             expected_output=(
-                "A numbered restoration plan with tool names, file paths, and rationale."
+                "El veredicto JSON de El Oyente con las métricas de calidad y el estado qc_passed, que confirme que todos colaboraron."
             ),
-            agent=strategist
+            agent=chief_engineer
         )
 
-        # ── Task 2: Surgical Execution ─────────────────────
-        execution_task = Task(
-            description=(
-                "Execute the restoration plan from the Strategist.\n"
-                "For the file: {audio_path} (named: {filename})\n\n"
-                "MANDATORY PROTOCOL:\n"
-                "1. Call sota_mastering_chain with input_path={audio_path} output_path=/data/output/{filename}_restored.wav\n"
-                "2. When the tool completes, output its JSON result.\n"
-                "NEVER call quality_comparison_auditor."
-            ),
-            expected_output=(
-                "The JSON result of the sota_mastering_chain tool execution."
-            ),
-            agent=surgeon,
-            context=[strategy_task],
-            tools=[self._tools_chain]
-        )
-
-        # ── Task 3: Quality Control ────────────────────────
-        qc_task = Task(
-            description=(
-                "Validate the restoration quality.\n"
-                "Call the quality_comparison_auditor tool with:\n"
-                "  input_path = {audio_path}  (the ORIGINAL file)\n"
-                "  output_path = /data/output/{filename}_restored.wav  (the RESTORED file)\n\n"
-                "Report the full QC verdict including all deltas and pass/fail status."
-            ),
-            expected_output=(
-                "The complete QC verdict JSON with qc_passed, deltas, and issues."
-            ),
-            agent=qc_auditor,
-            context=[execution_task],
-            tools=[self._tools_qc]
-        )
-
-        # ── Assemble Crew ──────────────────────────────────
+        # ── Assemble Circular Crew ──
         return Crew(
-            agents=[strategist, surgeon, qc_auditor],
-            tasks=[strategy_task, execution_task, qc_task],
-            process=Process.sequential,
+            agents=[
+                chief_engineer, 
+                sound_engineer, 
+                psychoacoustics_expert, 
+                physics_math_engineer, 
+                listener_reviewer
+            ],
+            tasks=[collaboration_task],
+            process=Process.sequential,  # We use sequential for the main task, but it operates circularly via allow_delegation
             verbose=True
         )

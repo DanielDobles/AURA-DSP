@@ -28,17 +28,27 @@ echo "╔═══════════════════════�
 echo "║  vLLM Multi-Model Deploy (ROCm MI300X)    ║"
 echo "╚════════════════════════════════════════════╝"
 
-# ─── Aggressive Cleanup (purge ALL vLLM/old containers) ───
+# ─── Aggressive Cleanup (purge ALL vLLM/old containers & fresh state) ───
 echo "[*] Purging ALL existing vLLM and ROCm containers..."
 # Kill by name patterns (AURYGA leftovers + our own)
-for name in vllm-reasoning vllm-coder vllm-qwen3 vllm-qwen2-audio rocm; do
+for name in vllm-reasoning vllm-coder vllm-qwen3 vllm-qwen2-audio rocm aura_vllm_engine aura_agent_swarm; do
     docker rm -f $name 2>/dev/null && echo "  Removed: $name" || true
 done
+
 # Kill any remaining vllm containers by image
 docker ps -a --filter "ancestor=vllm/vllm-openai-rocm:latest" -q | xargs -r docker rm -f 2>/dev/null || true
 docker ps -a --filter "ancestor=vllm/vllm-omni-rocm:latest" -q | xargs -r docker rm -f 2>/dev/null || true
 docker ps -a --filter "ancestor=rocm/vllm:latest" -q | xargs -r docker rm -f 2>/dev/null || true
-echo "[+] All old containers purged."
+
+echo "[*] Cleaning up Docker networks and dangling volumes..."
+docker network prune -f 2>/dev/null || true
+docker volume prune -f 2>/dev/null || true
+
+# Optional: System-wide fresh start
+echo "[*] Finalizing system purge..."
+docker system prune -f --volumes 2>/dev/null || true
+
+echo "[+] All old containers and resources purged."
 
 echo "[*] Pulling vLLM ROCm image..."
 docker pull vllm/vllm-openai-rocm:latest

@@ -112,3 +112,111 @@
 2026-05-10 01:58:51,213 [INFO] Downloading: /data/output/C.wav_restored.wav → C:\Suno_Restoration\Output\C.wav_restored.wav
 2026-05-10 01:59:02,644 [INFO] ✅ Downloaded C.wav_restored.wav — verified
 2026-05-10 01:59:03,319 [ERROR] Download failed for /data/output/C.wav_restored.wav: list index out of range
+2026-05-10 02:14:40,415 [INFO] 📥 1 completed file(s) found on server
+2026-05-10 02:14:40,428 [INFO] Downloading: /data/output/C.wav_restored.wav → C:\Suno_Restoration\Output\C.wav_restored.wav
+2026-05-10 02:14:40,892 [INFO] 📥 1 completed file(s) found on server
+2026-05-10 02:14:40,904 [INFO] Downloading: /data/output/C.wav_restored.wav → C:\Suno_Restoration\Output\C.wav_restored.wav
+2026-05-10 02:14:52,920 [INFO] ✅ Downloaded C.wav_restored.wav — verified
+2026-05-10 02:14:55,113 [ERROR] Download failed for /data/output/C.wav_restored.wav: list index out of range
+2026-05-10 02:27:29,471 [INFO] 📥 1 completed file(s) found on server
+2026-05-10 02:27:29,483 [INFO] Downloading: /data/output/A.wav_restored.wav → C:\Suno_Restoration\Output\A.wav_restored.wav
+2026-05-10 02:27:32,100 [INFO] 📥 1 completed file(s) found on server
+2026-05-10 02:27:32,109 [INFO] Downloading: /data/output/A.wav_restored.wav → C:\Suno_Restoration\Output\A.wav_restored.wav
+2026-05-10 02:27:43,761 [INFO] ✅ Downloaded A.wav_restored.wav — verified
+2026-05-10 02:27:55,112 [ERROR] Download failed for /data/output/A.wav_restored.wav: list index out of range
+2026-05-10 02:28:55,596 [INFO] 📥 1 completed file(s) found on server
+2026-05-10 02:28:55,597 [INFO] Downloading: /data/output/C.wav_restored.wav → C:\Suno_Restoration\Output\C.wav_restored.wav
+2026-05-10 02:29:10,182 [INFO] ✅ Downloaded C.wav_restored.wav — verified
+2026-05-10 02:30:10,867 [INFO] 📥 2 completed file(s) found on server
+2026-05-10 02:30:10,868 [INFO] Downloading: /data/output/C.wav_restored.wav → C:\Suno_Restoration\Output\C.wav_restored.wav
+2026-05-10 02:30:13,948 [INFO] ✅ Downloaded C.wav_restored.wav — verified
+2026-05-10 02:30:14,105 [INFO] Downloading: /data/output/C.wav_tonal_balance.wav → C:\Suno_Restoration\Output\C.wav_tonal_balance.wav
+2026-05-10 02:30:15,184 [INFO] 📥 1 completed file(s) found on server
+2026-05-10 02:30:15,185 [INFO] Downloading: /data/output/C.wav_tonal_balance.wav → C:\Suno_Restoration\Output\C.wav_tonal_balance.wav
+2026-05-10 02:30:23,473 [INFO] ✅ Downloaded C.wav_tonal_balance.wav — verified
+2026-05-10 02:30:24,352 [ERROR] Download failed for /data/output/C.wav_tonal_balance.wav: list index out of range
+2026-05-10 02:30:53,905 [INFO] 📥 1 completed file(s) found on server
+2026-05-10 02:30:53,905 [INFO] Downloading: /data/output/C.wav_neural_rebalance.wav → C:\Suno_Restoration\Output\C.wav_neural_rebalance.wav
+2026-05-10 02:30:54,632 [INFO] 📥 1 completed file(s) found on server
+2026-05-10 02:30:54,634 [INFO] Downloading: /data/output/C.wav_neural_rebalance.wav → C:\Suno_Restoration\Output\C.wav_neural_rebalance.wav
+2026-05-10 02:31:05,899 [INFO] ✅ Downloaded C.wav_neural_rebalance.wav — verified
+2026-05-10 02:31:06,952 [ERROR] Download failed for /data/output/C.wav_neural_rebalance.wav: list index out of range
+2026-05-10 02:31:36,335 [INFO] 📥 1 completed file(s) found on server
+2026-05-10 02:31:36,336 [INFO] Downloading: /data/output/C.wav_clarity_excite.wav → C:\Suno_Restoration\Output\C.wav_clarity_excite.wav
+2026-05-10 02:31:37,196 [INFO] 📥 1 completed file(s) found on server
+2026-05-10 02:31:37,197 [INFO] Downloading: /data/output/C.wav_clarity_excite.wav → C:\Suno_Restoration\Output\C.wav_clarity_excite.wav
+2026-05-10 02:31:47,074 [INFO] ✅ Downloaded C.wav_clarity_excite.wav — verified
+2026-05-10 02:31:47,720 [ERROR] Download failed for /data/output/C.wav_clarity_excite.wav: list index out of range
+2026-05-10 02:32:47,752 [INFO] 📥 1 completed file(s) found on server
+2026-05-10 02:32:47,753 [INFO] Downloading: /data/output/C.wav_transient_preservation.wav → C:\Suno_Restoration\Output\C.wav_transient_preservation.wav
+2026-05-10 02:32:48,203 [INFO] 📥 1 completed file(s) found on server
+2026-05-10 02:32:48,205 [INFO] Downloading: /data/output/C.wav_transient_preservation.wav → C:\Suno_Restoration\Output\C.wav_transient_preservation.wav
+2026-05-10 02:32:56,049 [INFO] ✅ Downloaded C.wav_transient_preservation.wav — verified
+2026-05-10 02:32:58,585 [ERROR] Download failed for /data/output/C.wav_transient_preservation.wav: list index out of range
+2026-05-10 02:33:26,495 [INFO] 📥 1 completed file(s) found on server
+2026-05-10 02:33:26,496 [INFO] Downloading: /data/output/C.wav_restored.wav → C:\Suno_Restoration\Output\C.wav_restored.wav
+2026-05-10 02:33:28,840 [INFO] 📥 1 completed file(s) found on server
+2026-05-10 02:33:28,841 [INFO] Downloading: /data/output/C.wav_restored.wav → C:\Suno_Restoration\Output\C.wav_restored.wav
+2026-05-10 02:33:34,134 [INFO] ✅ Downloaded C.wav_restored.wav — verified
+2026-05-10 02:33:36,180 [ERROR] Download failed for /data/output/C.wav_restored.wav: list index out of range
+2026-05-10 02:35:35,350 [INFO] 📥 1 completed file(s) found on server
+2026-05-10 02:35:35,352 [INFO] Downloading: /data/output/D.wav_restored.wav → C:\Suno_Restoration\Output\D.wav_restored.wav
+2026-05-10 02:35:37,184 [INFO] 📥 1 completed file(s) found on server
+2026-05-10 02:35:37,187 [INFO] Downloading: /data/output/D.wav_restored.wav → C:\Suno_Restoration\Output\D.wav_restored.wav
+2026-05-10 02:35:50,230 [INFO] ✅ Downloaded D.wav_restored.wav — verified
+2026-05-10 02:35:51,240 [ERROR] Download failed for /data/output/D.wav_restored.wav: list index out of range
+2026-05-10 02:37:21,155 [INFO] 📥 1 completed file(s) found on server
+2026-05-10 02:37:21,210 [INFO] Downloading: /data/output/Dobranoko.mp3_restored.wav → C:\Suno_Restoration\Output\Dobranoko.mp3_restored.wav
+2026-05-10 02:37:21,981 [INFO] 📥 1 completed file(s) found on server
+2026-05-10 02:37:21,986 [INFO] Downloading: /data/output/Dobranoko.mp3_restored.wav → C:\Suno_Restoration\Output\Dobranoko.mp3_restored.wav
+2026-05-10 02:37:36,553 [INFO] ✅ Downloaded Dobranoko.mp3_restored.wav — verified
+2026-05-10 02:37:42,295 [ERROR] Download failed for /data/output/Dobranoko.mp3_restored.wav: list index out of range
+2026-05-10 02:38:06,993 [INFO] 📥 1 completed file(s) found on server
+2026-05-10 02:38:06,994 [INFO] Downloading: /data/output/E.wav_restored.wav → C:\Suno_Restoration\Output\E.wav_restored.wav
+2026-05-10 02:38:12,559 [INFO] 📥 1 completed file(s) found on server
+2026-05-10 02:38:12,560 [INFO] Downloading: /data/output/E.wav_restored.wav → C:\Suno_Restoration\Output\E.wav_restored.wav
+2026-05-10 02:38:17,031 [ERROR] ❌ Download hash mismatch for E.wav_restored.wav
+2026-05-10 02:38:19,404 [INFO] ✅ Downloaded E.wav_restored.wav — verified
+2026-05-10 02:39:17,517 [INFO] 📥 1 completed file(s) found on server
+2026-05-10 02:39:17,518 [INFO] Downloading: /data/output/E.wav_restored.wav → C:\Suno_Restoration\Output\E.wav_restored.wav
+2026-05-10 02:39:20,119 [INFO] 📥 1 completed file(s) found on server
+2026-05-10 02:39:20,120 [INFO] Downloading: /data/output/E.wav_restored.wav → C:\Suno_Restoration\Output\E.wav_restored.wav
+2026-05-10 02:39:23,848 [ERROR] ❌ Download hash mismatch for E.wav_restored.wav
+2026-05-10 02:39:27,198 [ERROR] Download failed for /data/output/E.wav_restored.wav: list index out of range
+2026-05-10 02:40:13,135 [ERROR] Socket exception: An existing connection was forcibly closed by the remote host (10054)
+2026-05-10 02:40:13,142 [ERROR] Failed to list /data/output: Server connection dropped: 
+2026-05-10 02:40:16,457 [ERROR] Socket exception: An existing connection was forcibly closed by the remote host (10054)
+2026-05-10 02:40:16,461 [ERROR] Failed to list /data/output: Server connection dropped: 
+2026-05-10 02:40:43,142 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 02:40:46,461 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 02:40:50,690 [ERROR] Failed to list /data/output: [Errno None] Unable to connect to port 22 on 129.212.179.98
+2026-05-10 02:40:50,797 [ERROR] Failed to list /data/output: [Errno None] Unable to connect to port 22 on 129.212.179.98
+2026-05-10 02:41:20,691 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 02:41:20,797 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 02:41:20,819 [INFO] Connected (version 2.0, client OpenSSH_9.6p1)
+2026-05-10 02:41:20,925 [INFO] Connected (version 2.0, client OpenSSH_9.6p1)
+2026-05-10 02:41:21,234 [INFO] Authentication (publickey) successful!
+2026-05-10 02:41:21,284 [INFO] Authentication (publickey) successful!
+2026-05-10 02:41:21,530 [INFO] [chan 0] Opened sftp connection (server version 3)
+2026-05-10 02:41:21,531 [INFO] Connected to 129.212.179.98
+2026-05-10 02:41:21,575 [INFO] [chan 0] Opened sftp connection (server version 3)
+2026-05-10 02:41:21,577 [INFO] Connected to 129.212.179.98
+2026-05-10 02:45:36,458 [INFO] 👁️  Watching: C:\Suno_Restoration\Input
+2026-05-10 02:45:36,459 [INFO] Connecting to 129.212.179.98:22...
+2026-05-10 02:45:36,459 [INFO] 📡 Polling server every 30s for completed files
+2026-05-10 02:45:36,459 [INFO] ==================================================
+2026-05-10 02:45:36,459 [INFO] AARS Bridge is ACTIVE. Drop audio files into:
+2026-05-10 02:45:36,459 [INFO]   C:\Suno_Restoration\Input
+2026-05-10 02:45:36,460 [INFO] Restored files will appear in:
+2026-05-10 02:45:36,460 [INFO]   C:\Suno_Restoration\Output
+2026-05-10 02:45:36,460 [INFO] ==================================================
+2026-05-10 02:45:36,591 [INFO] Connected (version 2.0, client OpenSSH_9.6p1)
+2026-05-10 02:45:36,950 [INFO] Authentication (publickey) successful!
+2026-05-10 02:45:37,238 [INFO] [chan 0] Opened sftp connection (server version 3)
+2026-05-10 02:45:37,238 [INFO] Connected to 129.212.179.98
+2026-05-10 02:49:25,659 [INFO] 📥 1 completed file(s) found on server
+2026-05-10 02:49:25,667 [INFO] Downloading: /data/output/C_restored.wav → C:\Suno_Restoration\Output\C_restored.wav
+2026-05-10 02:49:25,705 [INFO] 📥 1 completed file(s) found on server
+2026-05-10 02:49:25,709 [INFO] Downloading: /data/output/C_restored.wav → C:\Suno_Restoration\Output\C_restored.wav
+2026-05-10 02:49:43,217 [INFO] ✅ Downloaded C_restored.wav — verified
+2026-05-10 02:49:45,082 [ERROR] Download failed for /data/output/C_restored.wav: list index out of range

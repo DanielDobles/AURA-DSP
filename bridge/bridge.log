@@ -1,0 +1,32 @@
+2026-05-09 19:29:05,644 [INFO] 👁️  Watching: C:\Suno_Restoration\Input
+2026-05-09 19:29:05,645 [INFO] Connecting to 129.212.179.98:22...
+2026-05-09 19:29:05,645 [INFO] 📡 Polling server every 30s for completed files
+2026-05-09 19:29:05,645 [INFO] ==================================================
+2026-05-09 19:29:05,645 [INFO] AARS Bridge is ACTIVE. Drop audio files into:
+2026-05-09 19:29:05,645 [INFO]   C:\Suno_Restoration\Input
+2026-05-09 19:29:05,645 [INFO] Restored files will appear in:
+2026-05-09 19:29:05,646 [INFO]   C:\Suno_Restoration\Output
+2026-05-09 19:29:05,646 [INFO] ==================================================
+2026-05-09 19:29:05,778 [INFO] Connected (version 2.0, client OpenSSH_9.6p1)
+2026-05-09 19:29:06,146 [INFO] Authentication (publickey) successful!
+2026-05-09 19:29:06,628 [INFO] [chan 0] Opened sftp connection (server version 3)
+2026-05-09 19:29:06,629 [INFO] Connected to 129.212.179.98
+2026-05-09 19:34:52,587 [INFO] Shutting down Bridge...
+2026-05-09 19:34:52,587 [INFO] [chan 0] sftp session closed.
+2026-05-09 19:34:52,588 [INFO] Disconnected.
+2026-05-09 20:59:35,258 [INFO] 👁️  Watching: C:\Suno_Restoration\Input
+2026-05-09 20:59:35,258 [INFO] Connecting to 129.212.179.98:22...
+2026-05-09 20:59:35,259 [INFO] 📡 Polling server every 30s for completed files
+2026-05-09 20:59:35,259 [INFO] ==================================================
+2026-05-09 20:59:35,259 [INFO] AARS Bridge is ACTIVE. Drop audio files into:
+2026-05-09 20:59:35,259 [INFO]   C:\Suno_Restoration\Input
+2026-05-09 20:59:35,259 [INFO] Restored files will appear in:
+2026-05-09 20:59:35,259 [INFO]   C:\Suno_Restoration\Output
+2026-05-09 20:59:35,259 [INFO] ==================================================
+2026-05-09 20:59:35,390 [INFO] Connected (version 2.0, client OpenSSH_9.6p1)
+2026-05-09 20:59:35,756 [INFO] Authentication (publickey) successful!
+2026-05-09 20:59:36,238 [INFO] [chan 0] Opened sftp connection (server version 3)
+2026-05-09 20:59:36,239 [INFO] Connected to 129.212.179.98
+2026-05-09 21:00:32,060 [INFO] Shutting down Bridge...
+2026-05-09 21:00:32,061 [INFO] [chan 0] sftp session closed.
+2026-05-09 21:00:32,062 [INFO] Disconnected.

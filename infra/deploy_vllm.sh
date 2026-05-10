@@ -28,17 +28,20 @@ echo "╔═══════════════════════�
 echo "║  vLLM Multi-Model Deploy (ROCm MI300X)    ║"
 echo "╚════════════════════════════════════════════╝"
 
-# ─── Cleanup ──────────────────────────────────────────
-for name in $CONTAINER_LLM $CONTAINER_AUDIO; do
-    if docker ps -a --format '{{.Names}}' | grep -q "^${name}$"; then
-        echo "[*] Stopping existing ${name}..."
-        docker stop $name 2>/dev/null || true
-        docker rm $name 2>/dev/null || true
-    fi
+# ─── Aggressive Cleanup (purge ALL vLLM/old containers) ───
+echo "[*] Purging ALL existing vLLM and ROCm containers..."
+# Kill by name patterns (AURYGA leftovers + our own)
+for name in vllm-reasoning vllm-coder vllm-qwen3 vllm-qwen2-audio rocm; do
+    docker rm -f $name 2>/dev/null && echo "  Removed: $name" || true
 done
+# Kill any remaining vllm containers by image
+docker ps -a --filter "ancestor=vllm/vllm-openai-rocm:latest" -q | xargs -r docker rm -f 2>/dev/null || true
+docker ps -a --filter "ancestor=vllm/vllm-omni-rocm:latest" -q | xargs -r docker rm -f 2>/dev/null || true
+docker ps -a --filter "ancestor=rocm/vllm:latest" -q | xargs -r docker rm -f 2>/dev/null || true
+echo "[+] All old containers purged."
 
 echo "[*] Pulling vLLM ROCm image..."
-docker pull vllm/vllm-omni-rocm:latest
+docker pull vllm/vllm-openai-rocm:latest
 
 # ─── Deploy Qwen3 (Agent Brain) ──────────────────────
 echo ""
@@ -54,10 +57,10 @@ docker run -d \
     -v ~/.cache/huggingface:/root/.cache/huggingface \
     -e HSA_OVERRIDE_GFX_VERSION=9.4.2 \
     -e HIP_VISIBLE_DEVICES=0 \
-    vllm/vllm-omni-rocm:latest \
+    vllm/vllm-openai-rocm:latest \
     --model $MODEL_LLM \
     --max-model-len 8192 \
-    --gpu-memory-utilization 0.40 \
+    --gpu-memory-utilization 0.75 \
     --trust-remote-code \
     --dtype auto \
     --enable-auto-tool-choice \
@@ -77,7 +80,7 @@ docker run -d \
     -v ~/.cache/huggingface:/root/.cache/huggingface \
     -e HSA_OVERRIDE_GFX_VERSION=9.4.2 \
     -e HIP_VISIBLE_DEVICES=0 \
-    vllm/vllm-omni-rocm:latest \
+    vllm/vllm-openai-rocm:latest \
     --model $MODEL_AUDIO \
     --max-model-len 4096 \
     --gpu-memory-utilization 0.15 \

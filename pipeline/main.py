@@ -1,0 +1,113 @@
+import os
+import json
+from pathlib import Path
+from crewai import Task, Crew
+from analysis.spectral import SpectralAnalyzer
+from crew import AURACrew
+
+# Paths within the container
+INPUT_DIR = Path("/data/input")
+OUTPUT_DIR = Path("/data/output")
+REPORT_DIR = Path("/data/reports")
+
+from rich.console import Console
+from rich.panel import Panel
+from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
+
+console = Console()
+
+def process_track(track_path: Path):
+    console.print(f"\n[bold magenta]🎮 LEVEL START: {track_path.name}[/bold magenta]")
+    
+    with Progress(
+        SpinnerColumn("dots12", style="cyan"),
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(bar_width=40, style="green"),
+        console=console
+    ) as progress:
+        
+        # Phase 1
+        t1 = progress.add_task("[cyan]Scanning Spectral Signature...", total=100)
+        analyzer = SpectralAnalyzer()
+        spectral_data = analyzer.analyze(str(track_path))
+        progress.update(t1, advance=100, description="[bold green]✓ Spectral Scan Complete[/bold green]")
+        
+        # Phase 2
+        t2 = progress.add_task("[yellow]Summoning Qwen AI Swarm...", total=None)
+        swarm = AURACrew()
+        
+        # Use absolute path for tools
+        abs_input_path = str(track_path.absolute())
+
+        triage_task = Task(
+            description=f"Analyze the audio file located at {abs_input_path}. Spectral Data: {json.dumps(spectral_data)}. Listen for artifacts.",
+            expected_output="A detailed medical record of the audio quality.",
+            agent=swarm.audiophile()
+        )
+
+        planning_task = Task(
+            description=f"Design a step-by-step restoration plan for {abs_input_path} based on triage and spectral data. Choose AERO, DeepFilterNet, ACE-Step.",
+            expected_output="A sequence of processing steps with specific tool names and parameters.",
+            agent=swarm.architect()
+        )
+
+        execution_task = Task(
+            description=(
+                f"Execute the restoration plan for {abs_input_path}. "
+                "You MUST use the available tools (aero_super_resolution, deepfilter_denoise, etc.) to process the file. "
+                "Do NOT just describe the steps; you must RUN them and report the SUCCESS or ERROR message from the tool. "
+                "Ensure final outputs are in /data/output with the '_restored' suffix."
+            ),
+            expected_output="A technical log of tool executions and the final file paths.",
+            agent=swarm.surgeon()
+        )
+
+        crew = Crew(
+            agents=[swarm.audiophile(), swarm.architect(), swarm.surgeon()],
+            tasks=[triage_task, planning_task, execution_task],
+            verbose=True  # Set to True to verify tool execution!
+        )
+        
+        progress.update(t2, total=100, advance=100, description="[bold green]✓ Swarm Assembled[/bold green]")
+        
+        # Phase 3
+        t3 = progress.add_task("[magenta]Executing Restoration Protocol...", total=None)
+        result = crew.kickoff()
+        progress.update(t3, total=100, advance=100, description="[bold green]✓ Audio Restored![/bold green]")
+        
+    # Save Report
+    report_file = REPORT_DIR / f"{track_path.stem}_report.json"
+    with open(report_file, "w") as f:
+        json.dump({
+            "spectral": spectral_data,
+            "crew_decision": str(result)
+        }, f, indent=4)
+        
+    console.print(Panel(f"[bold green]MISSION PASSED[/bold green]\nTrack: {track_path.name}\nReport: {report_file.name}", border_style="green"))
+
+def main():
+    # Ensure directories exist
+    for d in [INPUT_DIR, OUTPUT_DIR, REPORT_DIR]:
+        d.mkdir(parents=True, exist_ok=True)
+
+    tracks = list(INPUT_DIR.glob("*.wav")) + list(INPUT_DIR.glob("*.mp3"))
+    
+    if not tracks:
+        print("[AARS] 📭 No tracks found in /data/input. Awaiting bridge...")
+        return
+
+    for track in tracks:
+        report_file = REPORT_DIR / f"{track.stem}_report.json"
+        # Only skip if BOTH the report and at least one output file exist
+        output_exists = any(OUTPUT_DIR.glob(f"{track.stem}*"))
+        if report_file.exists() and output_exists:
+            print(f"[AARS] ⏩ Skipping {track.name} (Already processed & output found).")
+            continue
+            
+        try:
+            process_track(track)
+        except Exception as e:
+            print(f"[AARS] ❌ Failed to process {track.name}: {e}")
+
+if __name__ == "__main__":
+    main()

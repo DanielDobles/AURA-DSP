@@ -1,23 +1,29 @@
 # AARS Pipeline — ROCm MI300X Container
-FROM rocm/pytorch:rocm7.2.3_ubuntu24.04_py3.12_pytorch_release_2.9.1
+FROM rocm/pytorch:rocm6.2.2_ubuntu22.04_py3.10_pytorch_release_2.3.0
 
-# System deps
-RUN apt-get update -qq && \
-    apt-get install -y --no-install-recommends \
-    ffmpeg libsndfile1 && \
-    rm -rf /var/lib/apt/lists/*
+# System dependencies for audio and DSP
+RUN apt-get update && apt-get install -y \
+    ffmpeg \
+    libsndfile1 \
+    libsox-dev \
+    git \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Python deps
+# Install Python stack
 COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
+
+# Install dependencies but PROTECT the pre-installed ROCm torch/torchaudio
+# We use --no-deps for packages that might try to pull a different torch version
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy pipeline code
 COPY . .
 
-# Environment
+# Set environment variables for ROCm
 ENV HSA_OVERRIDE_GFX_VERSION=9.4.2
-ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app
 
 CMD ["python", "main.py"]

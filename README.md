@@ -2,70 +2,69 @@
 
 **Autonomous Audio Restoration Swarm — Powered by AMD ROCm**
 
-AURA-DSP es un sistema de restauración de audio autónomo de misión crítica diseñado para transformar grabaciones de baja calidad en piezas de alta fidelidad con cero intervención humana. Utilizando un enjambre (swarm) de agentes inteligentes coordinados y procesado DSP avanzado, AURA-DSP redefine la velocidad y precisión en la ingeniería de sonido.
+AURA-DSP is a mission-critical autonomous audio restoration system designed to transform low-quality recordings into high-fidelity masterpieces with zero human intervention. Utilizing a swarm of coordinated intelligent agents and advanced DSP processing, AURA-DSP redefines speed and precision in sound engineering.
 
 ---
 
-## 🚀 El Problema y Nuestra Solución
+## 🚀 The Problem and Our Solution
 
-### El Punto de Dolor
-La restauración de audio tradicional es un proceso artesanal, lento y costoso. Un ingeniero de sonido profesional puede tardar **decenas de horas** en limpiar, upsamplear, rebalancear y masterizar un solo track utilizando herramientas manuales. En entornos de misión crítica, este cuello de botella es inaceptable.
+### The Pain Point
+Traditional audio restoration is a manual, slow, and expensive process. A professional sound engineer can take **dozens of hours** to clean, upsample, rebalance, and master a single track using manual tools. In mission-critical environments, this bottleneck is unacceptable.
 
-### Nuestra Solución: AURA-DSP
-AURA-DSP automatiza este ciclo completo mediante un **Swarm Colaborativo Circular**. No es solo un script; es un equipo virtual de 5 especialistas (IA) que analizan la firma espectral del audio, recuperan heurísticas de ejecuciones pasadas y ejecutan una cadena de herramientas DSP de precisión quirúrgica.
-
----
-
-## ⚡ La Ventaja AMD: De Horas a Minutos
-
-El corazón de AURA-DSP late gracias a la arquitectura **AMD ROCm**. Gracias al paralelismo masivo de nuestras tarjetas AMD y la optimización de los kernels de PyTorch para ROCm, hemos logrado lo que parecía imposible:
-
-> **Lo que antes tomaba decenas de horas en una estación de trabajo convencional, AURA-DSP lo resuelve en solo 30 minutos.**
-
-Esta capacidad de cómputo nos permite ejecutar modelos de lenguaje masivos (como Qwen-32B vía vLLM) y algoritmos de separación de fuentes neuronales (Demucs) de forma simultánea, garantizando que el "Wow Factor" se alcance en una fracción del tiempo tradicional.
+### Our Solution: AURA-DSP
+AURA-DSP automates this entire cycle through a **Circular Collaborative Swarm**. It is not just a script; it is a virtual team of 5 specialists (AI) that analyze the audio's spectral signature, retrieve heuristics from past runs, and execute a surgical-precision DSP toolchain.
 
 ---
 
-## 🧠 Arquitectura: El Enjambre Colaborativo (OODA Loop)
+## ⚡ The AMD Advantage: From Hours to Minutes
 
-AURA-DSP no es un pipeline lineal; es un **Swarm de Agentes de Misión Crítica** coordinados mediante un ciclo **OODA** (Observe, Orient, Decide, Act). Cada agente opera con autonomía sobre herramientas DSP específicas optimizadas para **AMD ROCm**.
+The heart of AURA-DSP beats thanks to the **AMD ROCm** architecture. Leveraging the massive parallelism of our AMD cards and PyTorch kernel optimization for ROCm, we have achieved what seemed impossible:
 
-### Los Especialistas del Enjambre:
+> **What previously took dozens of hours on a conventional workstation, AURA-DSP resolves in just 30 minutes.**
 
-1.  **Ingeniero de Sonido Jefe (Estratega):**
-    *   **Misión:** Orquestación y delegación. Analiza la huella espectral y consulta la **Swarm Memory** para diseñar la estrategia de restauración óptima.
-    *   **IA:** Coordinador central basado en CrewAI.
-
-2.  **Ingeniero Físico-Matemático:**
-    *   **Misión:** Precisión a nivel de muestra. Ejecuta upsampling de 96kHz (Soxr VHQ) y preservación de transitorios mediante transformadas de Hilbert, utilizando kernels de PyTorch acelerados por GPU.
-
-3.  **Experto en Psicoacústica:**
-    *   **Misión:** Impacto emocional y claridad. Aplica algoritmos de saturación asimétrica (calidez de tubo) y expansión estéreo Mid-Side (M/S) dinámica.
-
-4.  **Ingeniero de Sonido (Neural):**
-    *   **Misión:** Rebalanceo inteligente. Utiliza modelos **Demucs (HTDemucs)** para separar stems, aislar voces y reconstruir la estructura rítmica con coherencia de fase.
-
-5.  **El Oyente (QC Auditor):**
-    *   **Misión:** El guardián de la calidad. Compara cuantitativamente el audio original vs. procesado, midiendo deltas de **SNR**, ancho de banda y factor de cresta. Tiene poder de veto para forzar reintentos si el resultado no es perfecto.
+This computing power allows us to simultaneously run massive language models (like Qwen-32B via vLLM) and neural source separation algorithms (Demucs), ensuring the "Wow Factor" is reached in a fraction of traditional time.
 
 ---
 
-## 🚀 La Ventaja AMD: De Horas a Minutos
+## 🧠 Architecture: The Collaborative Swarm (OODA Loop)
 
+AURA-DSP is not a linear pipeline; it is a **Mission-Critical Agent Swarm** coordinated via an **OODA** cycle (Observe, Orient, Decide, Act). Each agent operates autonomously over specific DSP tools optimized for **AMD ROCm**.
 
-### Requisitos
-*   Hardware AMD con soporte **ROCm 7.x+**.
+### Swarm Specialists:
+
+1.  **Chief Sound Engineer (Strategist):**
+    *   **Mission:** Orchestration and delegation. Analyzes the spectral fingerprint and consults the **Swarm Memory** to design the optimal restoration strategy.
+    *   **AI:** Central coordinator based on CrewAI.
+
+2.  **Physics-Mathematics Engineer:**
+    *   **Mission:** Sample-level precision. Executes 96kHz upsampling (Soxr VHQ) and transient preservation via Hilbert transforms, using GPU-accelerated PyTorch kernels.
+
+3.  **Psychoacoustics Expert:**
+    *   **Mission:** Emotional impact and clarity. Applies asymmetric saturation algorithms (tube warmth) and dynamic Mid-Side (M/S) stereo expansion.
+
+4.  **Sound Engineer (Neural):**
+    *   **Mission:** Intelligent rebalancing. Uses **Demucs (HTDemucs)** models to separate stems, isolate vocals, and reconstruct the rhythmic structure with phase coherence.
+
+5.  **The Listener (QC Auditor):**
+    *   **Mission:** The quality guardian. Quantitatively compares the original vs. processed audio, measuring **SNR**, bandwidth, and crest factor deltas. Holds veto power to force retries if the result is not perfect.
+
+---
+
+## 🛠 Installation and Usage
+
+### Requirements
+*   AMD Hardware with **ROCm 7.x+** support.
 *   Docker & Docker Compose.
 
-### Despliegue Rápido
-Para preparar el servidor y desplegar la infraestructura completa (incluyendo vLLM):
+### Quick Deployment
+To prepare the server and deploy the complete infrastructure (including vLLM):
 
 ```bash
 bash infra/deploy_all.sh
 ```
 
-### Procesamiento de Audio
-Coloca tus archivos en `/data/input` y ejecuta el orquestador:
+### Audio Processing
+Place your files in `/data/input` and run the orchestrator:
 
 ```bash
 python pipeline/main.py --input /data/input --output /data/output --purge
@@ -73,16 +72,16 @@ python pipeline/main.py --input /data/input --output /data/output --purge
 
 ---
 
-## 🛠 Próximos Pasos (Beta v0.9-beta)
-Aunque los resultados actuales son disruptivos, seguimos trabajando en:
-*   **Mejora de Procesos DSP:** Refinamiento de los algoritmos de preservación de transitorios por transformada de Hilbert.
-*   **Ingeniería de Audio:** Reducción de artefactos en la reconstrucción de frecuencias altas (Super-Resolution).
-*   **Optimización de Memoria:** Reducción del footprint de VRAM para permitir swarms más grandes.
+## 🛠 Next Steps (Beta v0.9-beta)
+While current results are disruptive, we are still working on:
+*   **DSP Process Enhancement:** Refining Hilbert transform-based transient preservation algorithms.
+*   **Audio Engineering:** Reducing artifacts in high-frequency reconstruction (Super-Resolution).
+*   **Memory Optimization:** Reducing VRAM footprint to allow for larger swarms.
 
 ---
 
-## 🙏 Agradecimientos
-Un agradecimiento especial a **AMD** por proporcionarnos el hardware y las herramientas necesarias para empujar los límites de lo que es posible en el procesamiento digital de señales y la inteligencia artificial. Sin su ecosistema ROCm, este nivel de rendimiento no sería posible.
+## 🙏 Acknowledgments
+A special thank you to **AMD** for providing us with the hardware and tools necessary to push the limits of what is possible in digital signal processing and artificial intelligence. Without your ROCm ecosystem, this level of performance would not be possible.
 
 ---
 *AURA-DSP: Audio Restoration at the Speed of Light.*

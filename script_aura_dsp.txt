@@ -1,0 +1,174 @@
+========================================================
+  AURA-DSP — EXPLAINER VIDEO NARRATION SCRIPT
+  Language: English
+  Duration: ~2 minutes 50 seconds
+  Format: Ready for ElevenLabs (split by scene)
+  
+  Legend:
+    [PAUSE]   = 0.5-1 second pause
+    [BEAT]    = brief micro-pause
+    [EMPHASIS] = stress this word/phrase
+    (SFX:)    = suggested sound effect cue
+========================================================
+
+
+--- SCENE 1: INTRO / HOOK (0:00 - 0:15) ---
+
+(SFX: deep bass hit, digital boot-up sound)
+
+What if you could restore [EMPHASIS] any audio recording [BEAT]
+to studio-quality [PAUSE] in under thirty minutes? [PAUSE]
+
+This is AURA-DSP. [BEAT]
+The Autonomous Audio Restoration Swarm. [PAUSE]
+Powered by AMD.
+
+
+--- SCENE 2: THE PROBLEM (0:15 - 0:35) ---
+
+(SFX: static noise, distorted audio clip)
+
+Traditional audio restoration is painful. [PAUSE]
+
+A professional sound engineer can spend [EMPHASIS] dozens of hours
+cleaning a single track. [BEAT]
+Removing noise. Reconstructing lost frequencies.
+Rebalancing stems. Mastering for loudness. [PAUSE]
+
+It's slow. It's expensive. [BEAT]
+And in production environments, [EMPHASIS] it's a bottleneck
+no one can afford. [PAUSE]
+
+
+--- SCENE 3: THE SOLUTION (0:35 - 0:55) ---
+
+(SFX: transformation whoosh, clean audio emerges)
+
+AURA-DSP eliminates that bottleneck entirely. [PAUSE]
+
+Instead of a single engineer with manual tools, [BEAT]
+we deploy a [EMPHASIS] swarm of five AI specialists [BEAT]
+that analyze, reason, and execute [BEAT]
+a surgical-precision D-S-P chain. [PAUSE]
+
+Every decision is adaptive. [BEAT]
+Every file gets a custom restoration plan. [BEAT]
+Zero human intervention. [PAUSE]
+
+
+--- SCENE 4: THE AMD ADVANTAGE (0:55 - 1:20) ---
+
+(SFX: engine ignition, power-up hum)
+
+The secret weapon? [BEAT]
+The AMD Instinct MI300X. [PAUSE]
+
+One hundred ninety-two gigabytes of HBM3 memory. [BEAT]
+Enough to simultaneously run [EMPHASIS] massive language models
+and neural source separation algorithms [BEAT]
+on a single card. [PAUSE]
+
+We load Qwen 3, a thirty-two billion parameter model,
+as the swarm's brain. [BEAT]
+And Qwen 2 Audio as its ears. [PAUSE]
+
+Both served through v-L-L-M on the ROCm stack. [BEAT]
+No cloud APIs. No latency. [BEAT]
+Everything runs [EMPHASIS] locally on bare metal. [PAUSE]
+
+
+--- SCENE 5: THE SWARM — OODA LOOP (1:20 - 1:50) ---
+
+(SFX: tactical radar blip, orchestral tension build)
+
+The swarm operates on a military-grade decision cycle [BEAT]
+called the OODA loop. [PAUSE]
+
+Observe. [BEAT] The system scans the audio's spectral signature
+and retrieves heuristics from past restorations. [PAUSE]
+
+Orient. [BEAT] The Chief Sound Engineer, an AI orchestrator,
+reads the diagnosis and designs the battle plan. [PAUSE]
+
+Decide. [BEAT] It delegates each step
+to the right specialist: [BEAT]
+the Physics-Math Engineer for upsampling, [BEAT]
+the Psychoacoustics Expert for clarity and spatial width, [BEAT]
+the Sound Engineer for EQ and neural stem rebalancing. [PAUSE]
+
+Act. [BEAT] The tools execute on the GPU. [PAUSE]
+
+Finally, The Listener, a quality auditor, [BEAT]
+compares original versus restored
+and issues a [EMPHASIS] pass or fail verdict. [BEAT]
+If it fails? The swarm retries with learned feedback. [PAUSE]
+
+
+--- SCENE 6: THE DSP PIPELINE (1:50 - 2:15) ---
+
+(SFX: data processing clicks, metric counters ticking)
+
+Under the hood, [BEAT]
+every tool returns structured metrics. [PAUSE]
+
+The pipeline can upsample to ninety-six kilohertz
+using GPU tensor resampling. [BEAT]
+Apply match-EQ to a pink noise target
+for instant tonal balance. [BEAT]
+Separate vocals, drums, bass, and melody
+with neural stem separation via Demucs. [BEAT]
+Inject psychoacoustic harmonics for air and clarity. [BEAT]
+Expand the stereo field with M-S processing
+and mono-bass below one-fifty hertz. [BEAT]
+And finalize with EBU R128 loudness normalization. [PAUSE]
+
+Before and after. [BEAT] Quantified. [BEAT] Auditable. [PAUSE]
+
+
+--- SCENE 7: DEMO — ONE COMMAND (2:15 - 2:35) ---
+
+(SFX: keyboard typing, terminal beeps)
+
+Deploying the entire system takes [EMPHASIS] one command. [PAUSE]
+
+Python. H-D dot P-Y. Ignite. [PAUSE]
+
+That single line provisions the server, [BEAT]
+loads both AI models into VRAM, [BEAT]
+and builds the restoration container. [PAUSE]
+
+Then you upload your tracks, [BEAT]
+run the pipeline, [BEAT]
+and the restored files appear in your output folder. [PAUSE]
+
+What used to take days [BEAT]
+now takes [EMPHASIS] thirty minutes. [PAUSE]
+
+
+--- SCENE 8: OUTRO / CTA (2:35 - 2:50) ---
+
+(SFX: cinematic resolve chord)
+
+AURA-DSP. [PAUSE]
+
+Five AI agents. [BEAT]
+Ten DSP tools. [BEAT]
+One AMD MI300X. [PAUSE]
+
+Audio restoration [BEAT] at the speed of light. [PAUSE]
+
+Built on AMD ROCm. [BEAT]
+Built for the future of sound. [PAUSE]
+
+
+========================================================
+  END OF SCRIPT
+  
+  ElevenLabs Tips:
+  - Use "Narrative" or "Documentary" voice style
+  - Stability: 0.50 | Similarity: 0.75
+  - For [EMPHASIS] words, consider a slightly 
+    slower pace or a deeper register
+  - Record each scene as a separate audio file
+    for easier sync with Remotion
+========================================================

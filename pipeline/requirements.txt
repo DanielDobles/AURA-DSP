@@ -1,15 +1,11 @@
-# AARS Core Dependencies
+# AARS Core Dependencies (v3: Self-Improving Pipeline)
 crewai[litellm]
-langchain-openai
+pydantic
+pydantic_settings
 librosa
+scipy
 soundfile
 numpy
-pydantic
-scipy
-ffmpeg-python
-requests
-
-# Audio Models (Suno Restoration)
-deepfilternet
-vocos
 scikit-learn
+rich
+requests

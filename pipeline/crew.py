@@ -87,7 +87,7 @@ class AURACrew:
             tools=[self._tools_tonal, self._tools_neural, self._tools_maxi, self._tools_master],
             llm=llm_brain,
             verbose=True,
-            allow_delegation=True
+            allow_delegation=False
         )
 
         # ── 3. Experto en Psicoacústica y Audiófilo ──
@@ -102,7 +102,7 @@ class AURACrew:
             tools=[self._tools_exciter, self._tools_psycho, self._tools_wide],
             llm=llm_brain,
             verbose=True,
-            allow_delegation=True
+            allow_delegation=False
         )
 
         # ── 4. Ingeniero Físico-Matemático ──
@@ -117,7 +117,7 @@ class AURACrew:
             tools=[self._tools_upsampler, self._tools_transient],
             llm=llm_brain,
             verbose=True,
-            allow_delegation=True
+            allow_delegation=False
         )
 
         # ── 5. El Oyente ──
@@ -132,7 +132,7 @@ class AURACrew:
             tools=[self._tools_qc],
             llm=llm_brain,
             verbose=True,
-            allow_delegation=True
+            allow_delegation=False
         )
 
         # ── Task: Circular Collaborative Restoration ──

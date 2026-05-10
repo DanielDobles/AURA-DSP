@@ -468,27 +468,32 @@ class StereoWidthTool(BaseTool):
             y_cpu = y_tensor.cpu().numpy()
             input_metrics = _measure_audio(y_cpu[0], sr)
             
-            # M/S Matrix on GPU
-            left = y_tensor[0:1, :]
-            right = y_tensor[1:2, :]
+            y_cpu = y_tensor.cpu().numpy()
+            input_metrics = _measure_audio(y_cpu[0], sr)
+            
+            # M/S Matrix in Numpy (Safe and stable)
+            left = y_cpu[0]
+            right = y_cpu[1]
             mid = (left + right) / 2.0
             side = (left - right) / 2.0
             
-            # Mono-Bass (Sum below 150Hz to Mid, remove from Side) using torchaudio biquad on GPU
-            side_low = F_audio.lowpass_biquad(side, sr, cutoff_freq=150.0)
-            side_high = F_audio.highpass_biquad(side, sr, cutoff_freq=150.0)
+            # Mono-Bass (Sum below 150Hz to Mid, remove from Side) using stable SciPy
+            sos_low = signal.butter(4, 150.0, 'lp', fs=sr, output='sos')
+            sos_high = signal.butter(4, 150.0, 'hp', fs=sr, output='sos')
+            
+            side_low = signal.sosfilt(sos_low, side)
+            side_high = signal.sosfilt(sos_high, side)
             
             # Move side low frequencies to mid (perfect mono compatibility for bass)
             mid = mid + side_low
             # Expand the highs in the side channel for immersive width
             side_high = side_high * 1.15
             
-            y_wide = torch.cat([mid + side_high, mid - side_high], dim=0)
-            y_wide = y_wide / (torch.max(torch.abs(y_wide)) + 1e-10)
+            y_wide = np.stack([mid + side_high, mid - side_high], axis=0)
+            y_wide = y_wide / (np.max(np.abs(y_wide)) + 1e-10)
             
-            y_out_cpu = y_wide.cpu().numpy()
-            sf.write(output_path, y_out_cpu.T, sr)
-            output_metrics = _measure_audio(y_out_cpu[0], sr)
+            sf.write(output_path, y_wide.T, sr)
+            output_metrics = _measure_audio(y_wide[0], sr)
 
             return _make_result(True, output_path, "Stereo soundstage expanded (GPU Tensor M/S + Mono-Bass).", input_metrics, output_metrics)
         except Exception as e:
